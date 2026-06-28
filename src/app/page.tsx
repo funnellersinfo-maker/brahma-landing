@@ -686,11 +686,11 @@ export default function Home() {
               <div className="lp-pdp__crumb">
                 <b>COMBO BRAHMA</b> · Moster Edition
               </div>
-              <h1 className="lp-pdp__title">
-                Combo Brahma <em>Moster</em> Zapatos + Gorra
-              </h1>
-              <div className="lp-pdp__hook" key={hookIdx}>
+              <h1 className="lp-pdp__title" key={hookIdx}>
                 {HERO_HOOKS[hookIdx]}
+              </h1>
+              <div className="lp-pdp__hook-sub">
+                Combo Brahma <em>Moster</em> Zapatos + Gorra
               </div>
               <p className="lp-pdp__subtitle">
                 Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
