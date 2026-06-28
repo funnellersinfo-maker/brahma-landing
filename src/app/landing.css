@@ -368,9 +368,9 @@
 }
 .lp-root .lp-brand__logo,
 .lp-brand__logo {
-  height: 28px;
+  height: 34px;
   width: auto;
-  max-height: 28px;
+  max-height: 34px;
   display: block;
   transition: opacity var(--lp-dur-fast) var(--lp-ease);
 }
