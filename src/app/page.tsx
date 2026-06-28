@@ -618,7 +618,7 @@ export default function Home() {
           <div className="lp-container">
             <div className="lp-section-head lp-section-head--center lp-reveal">
               <span className="lp-eyebrow">Por qué elegirlo</span>
-              <h2>Diseñado para el hombre que no se detiene</h2>
+              <h2>Diseñado para los que no se detienen</h2>
               <p>Este calzado casual combina resistencia, confort y un diseño moderno ideal para cualquier ocasión.</p>
             </div>
             <div className="lp-benefits">
@@ -653,24 +653,14 @@ export default function Home() {
             <div className="lp-wa-testis">
               {WA_TESTIMONIALS.map((t, i) => (
                 <article key={t.name} className="lp-wa lp-reveal" data-delay={(i % 3) + 1}>
-                  <div className="lp-wa__header">
-                    <div className="lp-wa__avatar">{t.initials}</div>
-                    <div>
-                      <div className="lp-wa__name">{t.name}</div>
-                      <div className="lp-wa__status">en línea · {t.city}</div>
-                    </div>
-                    <Icon name="whatsapp" style={{ width: 20, height: 20, marginLeft: "auto", opacity: 0.8 }} />
+                  <div className="lp-wa__shot">
+                    <img src={t.photo} alt={`Mensaje de WhatsApp real de ${t.name} desde ${t.city}`} loading="lazy" />
                   </div>
-                  <div className="lp-wa__body">
-                    <div className="lp-wa__photo">
-                      <img src={t.photo} alt={`Mensaje de WhatsApp de ${t.name}`} loading="lazy" />
-                      <span className="lp-wa__photo-caption">{t.photoCaption}</span>
-                    </div>
-                    <div className="lp-wa__bubble">{t.message}</div>
-                    <div className="lp-wa__time">{t.time} <Icon name="checkDouble" /></div>
+                  <div className="lp-wa__footer">
+                    <div className="lp-wa__stars">{"★".repeat(t.stars)}{"☆".repeat(5 - t.stars)}</div>
+                    <div className="lp-wa__who"><b>{t.name}</b> · {t.city}</div>
+                    <div className="lp-wa__verified"><Icon name="check" /> Compra verificada · {t.photoCaption}</div>
                   </div>
-                  <div className="lp-wa__stars">{"★".repeat(t.stars)}{"☆".repeat(5 - t.stars)}</div>
-                  <div className="lp-wa__verified"><Icon name="check" /> Compra verificada · {t.city}</div>
                 </article>
               ))}
             </div>
