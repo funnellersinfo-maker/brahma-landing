@@ -95,7 +95,7 @@
   flex-direction: column;
   min-height: 100vh;
 }
-.lp-root .lp-main { flex: 1 0 auto; }
+.lp-root .lp-main { flex: 1 0 auto; padding-top: var(--lp-header-h); }
 
 .lp-root h1,
 .lp-root h2,
@@ -441,7 +441,7 @@
 .lp-mobile-menu {
   position: fixed;
   inset: var(--lp-header-h) 0 auto 0;
-  background: rgba(245, 242, 236, 0.92);
+  background: var(--lp-bone);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--lp-line);
@@ -450,11 +450,25 @@
   opacity: 0;
   pointer-events: none;
   transition: transform var(--lp-dur) var(--lp-ease), opacity var(--lp-dur) var(--lp-ease);
-  z-index: 99;
+  z-index: 110;
+  box-shadow: var(--lp-shadow-lg);
 }
 .lp-mobile-menu.is-open {
   transform: translateY(0);
   opacity: 1;
+  pointer-events: auto;
+}
+/* Scrim/overlay detrás del menú móvil — oscurece el resto (incluido el banner de urgencia) */
+.lp-mobile-scrim {
+  position: fixed;
+  inset: var(--lp-header-h) 0 0 0;
+  background: rgba(11, 11, 12, 0);
+  z-index: 105;
+  pointer-events: none;
+  transition: background var(--lp-dur) var(--lp-ease);
+}
+.lp-mobile-scrim.is-open {
+  background: rgba(11, 11, 12, 0.45);
   pointer-events: auto;
 }
 .lp-mobile-menu a {
@@ -1914,7 +1928,7 @@
 /* ---------- Hero PDP: imagen izq, info der ---------- */
 .lp-pdp {
   position: relative;
-  padding-top: calc(var(--lp-header-h) + clamp(24px, 4vw, 48px));
+  padding-top: clamp(24px, 4vw, 48px);
   padding-bottom: clamp(48px, 6vw, 80px);
 }
 .lp-pdp__bg {

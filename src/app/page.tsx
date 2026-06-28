@@ -258,10 +258,13 @@ export default function Home() {
       const el = root.querySelector(id) as HTMLElement | null;
       if (el) {
         e.preventDefault();
+        // Cerrar menú móvil y restaurar scroll ANTES de animar (overflow:hidden bloquea scrollTo)
+        root.querySelector(".lp-mobile-menu")?.classList.remove("is-open");
+        root.querySelector(".lp-mobile-scrim")?.classList.remove("is-open");
+        root.querySelector(".lp-menu-btn")?.classList.remove("is-open");
+        document.body.style.overflow = "";
         const top = el.getBoundingClientRect().top + window.scrollY - 64;
         window.scrollTo({ top, behavior: "smooth" });
-        root.querySelector(".lp-mobile-menu")?.classList.remove("is-open");
-        root.querySelector(".lp-menu-btn")?.classList.remove("is-open");
       }
     };
     root.addEventListener("click", onClick);
@@ -426,11 +429,24 @@ export default function Home() {
           <button className="lp-menu-btn" aria-label="Menú" onClick={(e) => {
             const b = e.currentTarget;
             const m = document.querySelector(".lp-mobile-menu");
-            b.classList.toggle("is-open");
-            m?.classList.toggle("is-open");
+            const s = document.querySelector(".lp-mobile-scrim");
+            const willOpen = !b.classList.contains("is-open");
+            b.classList.toggle("is-open", willOpen);
+            m?.classList.toggle("is-open", willOpen);
+            s?.classList.toggle("is-open", willOpen);
+            document.body.style.overflow = willOpen ? "hidden" : "";
           }}><span /></button>
         </div>
       </header>
+      <div className="lp-mobile-scrim" onClick={() => {
+        const b = document.querySelector(".lp-menu-btn");
+        const m = document.querySelector(".lp-mobile-menu");
+        const s = document.querySelector(".lp-mobile-scrim");
+        b?.classList.remove("is-open");
+        m?.classList.remove("is-open");
+        s?.classList.remove("is-open");
+        document.body.style.overflow = "";
+      }} aria-hidden="true" />
       <div className="lp-mobile-menu">
         <a href="#beneficios">Beneficios</a>
         <a href="#opiniones">Opiniones</a>

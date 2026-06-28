@@ -87,3 +87,29 @@ Stage Summary:
 - Orden claro: Urgencia → Hero PDP → 3 Pasos → Beneficios → Testimonios WA → Oferta → Garantía → FAQ → Form.
 - Psicología aplicada: anchoring (precio tachado), escasez (stock 37 + bar), urgencia (countdown + strip), prueba social (3 WA + stats), reversión de riesgo (garantía), compromiso (3 pasos), eliminación de objeciones (8 FAQs).
 - Funcional: pedidos contra entrega se guardan en BD vía /api/order.
+
+---
+Task ID: 4
+Agent: orchestrator (main)
+Task: Fix solapamiento en móvil entre el banner "OFERTA TERMINA HOY" y el menú desplegable del header.
+
+Work Log:
+- Diagnóstico con Agent Browser (390px): el banner de urgencia tenía position:static y top:0, quedando DETRÁS del header fixed transparente. El menú móvil desplegable (translúcido rgba 0.92, z-index 99) dejaba ver el banner negro a través de él → conflicto visual.
+- Causa raíz: el <main> no tenía padding-top para compensar el header fixed, así que el banner de urgencia (primer hijo del main) se renderizaba en top:0, detrás del header.
+- Fix 1: padding-top en .lp-root .lp-main = var(--lp-header-h) para que todo el contenido empiece debajo del header. Ajustado .lp-pdp padding-top para evitar duplicación.
+- Fix 2: menú móvil ahora opaco (background: var(--lp-bone) sólido, no translúcido) + z-index 110 (mayor que header 100) + box-shadow-lg para separación clara.
+- Fix 3: añadido .lp-mobile-scrim (overlay oscuro rgba 0.45, z-index 105) que cubre el resto de la página cuando el menú está abierto. Click en el scrim cierra el menú.
+- Fix 4: lógica del botón hamburguesa actualizada para togglear menú + scrim + body.overflow=hidden (bloquea scroll de fondo).
+- Fix 5: orden del handler de smooth-scroll corregido — ahora cierra el menú y restaura overflow ANTES de hacer scrollTo (overflow:hidden bloqueaba el scroll suave).
+- Verificación E2E móvil:
+  - Banner de urgencia visible DEBAJO del header (no detrás). ✅
+  - Menú abierto: fondo opaco beige, links legibles, overlay oscuro cubre el resto (incluido el banner). ✅
+  - Click en scrim cierra el menú. ✅
+  - Click en enlace del menú (Beneficios): cierra menú + scrim + restaura overflow + scroll suave a la sección (scrollY=2612). ✅
+  - Desktop 1440px sin regresiones. ✅
+- Lint: 0 errores. Dev.log limpio.
+
+Stage Summary:
+- Conflicto visual resuelto: el banner "OFERTA TERMINA HOY" ya no se interpone con el menú móvil desplegable.
+- El menú móvil ahora es opaco, tiene un overlay/scrim que oscurece el resto de la página, y se cierra correctamente al hacer click en un enlace o en el área oscura.
+- El banner de urgencia se renderiza debajo del header (no detrás), mejorando la jerarquía visual en móvil y desktop.
