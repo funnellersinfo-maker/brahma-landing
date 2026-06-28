@@ -368,17 +368,17 @@
 }
 .lp-root .lp-brand__logo,
 .lp-brand__logo {
-  height: 22px;
+  height: 28px;
   width: auto;
-  max-height: 22px;
+  max-height: 28px;
   display: block;
   transition: opacity var(--lp-dur-fast) var(--lp-ease);
 }
 .lp-brand:hover .lp-brand__logo { opacity: 0.7; }
 .lp-root .lp-brand--footer .lp-brand__logo,
 .lp-brand--footer .lp-brand__logo {
-  height: 32px;
-  max-height: 32px;
+  height: 40px;
+  max-height: 40px;
   filter: brightness(0) invert(1); /* logo blanco para fondo oscuro del footer */
 }
 .lp-brand__mark {
