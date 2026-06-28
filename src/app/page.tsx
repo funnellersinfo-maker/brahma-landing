@@ -26,7 +26,7 @@ const COLORWAYS: Colorway[] = [
 const PRICE_OLD = 159900;
 const PRICE_NOW = 129900;
 const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
-const TALLAS = ["36", "37", "38", "39", "40", "41", "42", "43"];
+const TALLAS = ["35", "36", "37", "38", "39", "40", "41", "42", "43"];
 
 const BENEFITS = [
   { title: "Material durable", desc: "Sintético de alta calidad que resiste el uso diario sin desgaste.", icon: "gem" },
@@ -79,7 +79,7 @@ const WA_TESTIMONIALS = [
 const FAQS = [
   { q: "¿La gorra realmente es gratis?", a: "Sí, la gorra BRAHMA en drill bordada va incluida sin costo adicional con la compra de tu combo. No es un complemento aparte, viene en la misma caja." },
   { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. Cero pago anticipado, cero riesgo." },
-  { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 37 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
+  { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 35 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
   { q: "¿Hacen envíos a toda Colombia?", a: "Sí, realizamos envíos a nivel nacional a través de transportadoras certificadas. El envío es 100% gratis, sin costos ocultos." },
   { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos en 24 horas hábiles. La entrega tarda de 1 a 5 días hábiles según tu ciudad. Bogotá, Medellín y Cali suelen recibir en 1-2 días." },
   { q: "¿Qué pasa si la talla no me queda bien?", a: "Tienes derecho a cambio de talla siguiendo nuestra política. Contáctanos apenas recibas tu pedido y lo solucionamos. Tu satisfacción es la única condición." },
