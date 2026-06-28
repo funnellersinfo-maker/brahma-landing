@@ -110,6 +110,13 @@
 
 .lp-root p { color: var(--lp-ink-2); }
 .lp-root a { color: inherit; text-decoration: none; }
+/* Fix: los <a> con clase de botón deben mostrar su color de variante.
+   .lp-root a (0,1,1) pisaba el color de .lp-btn--primary (0,1,0),
+   dejando el texto invisible (negro sobre negro). Estas reglas
+   elevan la especificidad a (0,2,1) para que ganen. */
+.lp-root a.lp-btn--primary { background: var(--lp-ink); color: var(--lp-bone); box-shadow: var(--lp-shadow); }
+.lp-root a.lp-btn--ghost  { background: transparent; color: var(--lp-ink); border: 1px solid var(--lp-line-2); }
+.lp-root a.lp-btn--light  { background: var(--lp-bone); color: var(--lp-ink); box-shadow: var(--lp-shadow); }
 .lp-root img { display: block; max-width: 100%; height: auto; }
 .lp-root button { font-family: inherit; cursor: pointer; border: none; background: none; }
 .lp-root ul { list-style: none; }
@@ -225,7 +232,8 @@
   white-space: nowrap;
 }
 
-.lp-btn--primary {
+.lp-btn--primary,
+.lp-root a.lp-btn--primary {
   background: var(--lp-ink);
   color: var(--lp-bone);
   box-shadow: var(--lp-shadow);
@@ -256,6 +264,11 @@
   background: var(--lp-ink);
   color: var(--lp-bone);
   transform: translateY(-2px);
+}
+.lp-root a.lp-btn--ghost:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+  border-color: var(--lp-ink);
 }
 
 .lp-btn--light {

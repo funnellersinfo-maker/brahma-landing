@@ -26,3 +26,24 @@ Stage Summary:
 - Conversión: Pago Contra Entrega destacado, anchoring de precio, escasez (stock dinámico), urgencia (countdown), prueba social (6 testimonios + stats), reversión de riesgo (garantía 30 días), eliminación de objeciones (FAQ).
 - Backend: /api/order + Prisma Order model operativos. Pedido de prueba guardado en BD.
 - Archivos clave: src/app/page.tsx, src/app/landing.css, src/app/layout.tsx, src/app/api/order/route.ts, prisma/schema.prisma, public/images/combo-*.jpg.
+
+---
+Task ID: 2
+Agent: orchestrator (main)
+Task: Fix botón "Comprar ahora" del header con texto invisible (negro sobre negro).
+
+Work Log:
+- Diagnóstico con Agent Browser: el botón header CTA tenía color=rgb(11,11,12) (negro) y background=rgb(11,11,12) (negro) → texto invisible.
+- Causa raíz: en landing.css línea 112, la regla `.lp-root a { color: inherit }` tiene especificidad (0,1,1), que GANA sobre `.lp-btn--primary { color: var(--lp-bone) }` con especificidad (0,1,0). Como el botón del header es un <a> (no un <button>), heredaba el color del padre → negro.
+- Fix: añadí reglas con especificidad elevada (0,2,1) en landing.css para los <a> que son botones:
+  - `.lp-root a.lp-btn--primary { background: var(--lp-ink); color: var(--lp-bone); ... }`
+  - `.lp-root a.lp-btn--ghost { ... color: var(--lp-ink); ... }`
+  - `.lp-root a.lp-btn--light { ... color: var(--lp-ink); ... }`
+  - `.lp-root a.lp-btn--ghost:hover { color: var(--lp-bone); background: var(--lp-ink); ... }`
+- Verificación: recargué y revisé los 8 CTAs tipo <a> de la página. Todos ahora tienen texto legible (blanco sobre negro, o negro sobre blanco/transparente según la variante).
+- Lint: 0 errores, 0 warnings.
+- VLM confirmó: "Comprar ahora" del header ahora tiene texto blanco sobre fondo negro, alta legibilidad.
+
+Stage Summary:
+- Bug de contraste resuelto. Todos los CTAs (header, hero, qué incluye, oferta, sticky móvil, buy-bar desktop, menú móvil) ahora muestran su texto correctamente.
+- El problema afectaba solo a los <a> con clase lp-btn--primary/ghost/light; los <button> (como el submit del form) no se veían afectados porque la regla `.lp-root a` no les aplica.
