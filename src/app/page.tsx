@@ -96,7 +96,7 @@ const FAQS = [
   { q: "¿La gorra realmente es gratis?", a: "Sí, la gorra BRAHMA en drill bordada va incluida sin costo adicional con la compra de tu combo. No es un complemento aparte, viene en la misma caja." },
   { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. Cero pago anticipado, cero riesgo." },
   { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 35 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
-  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, realizamos envíos a nivel nacional a través de transportadoras certificadas. El envío es 100% gratis, sin costos ocultos." },
+  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, realizamos envíos a nivel nacional a través de transportadoras certificadas (Envía, Coordinadora, Inter Rapidísimo, TCC). El envío es 100% gratis. No hacemos envíos a San Andrés Islas ni a Amazonas." },
   { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos en 24 horas hábiles. La entrega tarda de 1 a 5 días hábiles según tu ciudad. Bogotá, Medellín y Cali suelen recibir en 1-2 días." },
   { q: "¿Qué pasa si la talla no me queda bien?", a: "Tienes derecho a cambio de talla siguiendo nuestra política. Contáctanos apenas recibas tu pedido y lo solucionamos. Tu satisfacción es la única condición." },
   { q: "¿Puedo pagar con tarjeta o transferencia?", a: "El método principal es Contra Entrega en efectivo. Si prefieres tarjeta o transferencia (con descuento adicional), escríbenos por WhatsApp." },
@@ -108,6 +108,16 @@ const CITIES = [
   "Bucaramanga", "Pereira", "Manizales", "Cúcuta", "Santa Marta",
   "Ibagué", "Villavicencio", "Armenia", "Neiva", "Pasto", "Valledupar",
 ];
+
+/* Notificaciones de compra flotantes — prueba social en tiempo real */
+const BUYER_NAMES = [
+  "Andrés G.", "Valentina R.", "Sebastián M.", "Camila T.", "David R.",
+  "Mariana L.", "Juan P.", "Laura G.", "Carlos A.", "Daniela S.",
+  "Felipe O.", "Sara M.", "Nicolás R.", "Isabella C.", "Mateo V.",
+  "Gabriela F.", "Santiago H.", "Paula N.", "Tomás B.", "Manuela Q.",
+];
+const BUYER_CITIES = CITIES; // ciudades donde sí hay envío (sin San Andrés ni Amazonas)
+const BUYER_COLORS = ["Arena", "Café", "Verde Militar", "Azul Noche", "Negro"];
 
 /* ------------------------------------------------------------------ */
 /*  ICONOS SVG                                                         */
@@ -161,6 +171,7 @@ export default function Home() {
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [tall, setTall] = useState("40");
   const [views, setViews] = useState(82); // personas viendo (rango 79-85)
+  const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string } | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -470,6 +481,36 @@ export default function Home() {
       io.observe(v);
     });
     return () => io.disconnect();
+  }, []);
+
+  // Notificaciones de compra flotantes — prueba social (cada 10-20s aleatorio)
+  useEffect(() => {
+    let active = true;
+    let hideTimer: number;
+    const AVATAR_COLORS = ["#1a1a1c", "#3a4a63", "#6b4a2e", "#5a5a32", "#b87a1e"];
+    const showPn = () => {
+      if (!active) return;
+      const name = BUYER_NAMES[Math.floor(Math.random() * BUYER_NAMES.length)];
+      const city = BUYER_CITIES[Math.floor(Math.random() * BUYER_CITIES.length)];
+      const color = BUYER_COLORS[Math.floor(Math.random() * BUYER_COLORS.length)];
+      const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2);
+      const mins = Math.floor(Math.random() * 14) + 1; // 1-14 min
+      const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+      setPn({ name, city, color, initials, mins, avatarColor });
+      // Ocultar después de 5-6 segundos
+      hideTimer = window.setTimeout(() => {
+        setPn(null);
+        // Próxima notificación en 10-20 segundos
+        window.setTimeout(showPn, 10000 + Math.random() * 10000);
+      }, 5500);
+    };
+    // Primera notificación después de 6-10 segundos
+    const firstTimer = window.setTimeout(showPn, 6000 + Math.random() * 4000);
+    return () => {
+      active = false;
+      window.clearTimeout(firstTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, []);
 
   /* El total usa el precio del tier seleccionado; si el usuario modificó qty
@@ -998,6 +1039,9 @@ export default function Home() {
                     {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                   <span className="lp-field__error">{errors.city}</span>
+                  <small style={{ display: "block", marginTop: 6, fontSize: "0.72rem", color: "var(--lp-stone)" }}>
+                    No enviamos a San Andrés Islas ni Amazonas.
+                  </small>
                 </div>
 
                 <div className={`lp-field ${errors.address ? "has-error" : ""}`}>
@@ -1104,6 +1148,17 @@ export default function Home() {
         <div className={`lp-toast lp-toast--${toast.type} is-visible`} role="status">
           <Icon name={toast.type === "success" ? "check" : toast.type === "error" ? "x" : "sparkle"} />
           <span>{toast.msg}</span>
+        </div>
+      )}
+
+      {/* ============ PURCHASE NOTIFICATIONS (prueba social) ============ */}
+      {pn && (
+        <div className="lp-pn is-visible" role="status" aria-live="polite">
+          <span className="lp-pn__avatar" style={{ background: pn.avatarColor }}>{pn.initials}</span>
+          <div className="lp-pn__body">
+            <div className="lp-pn__title"><b>{pn.name}</b> compró combo {pn.color}</div>
+            <div className="lp-pn__meta"><Icon name="location" /> {pn.city} · hace {pn.mins} min</div>
+          </div>
         </div>
       )}
     </div>

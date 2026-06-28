@@ -218,3 +218,32 @@ Stage Summary:
 - Captions estilo "REC" con dot rojo pulsante dan sensación de video en vivo/authentic.
 - Stats refuerzan autoridad (+12.000 pedidos despachados).
 - Contenido 100% real del cliente, no stock photography.
+
+---
+Task ID: 8
+Agent: orchestrator (main)
+Task: Reemplazar video empacando por versión editada, añadir notificaciones de compra flotantes, excluir San Andrés y Amazonas del envío.
+
+Work Log:
+- Video "EMPACANDO EDIT.mp4" (58MB) comprimido con ffmpeg (scale 480, crf 30, ultrafast, sin audio) a 8.1MB en background con nohup. Poster extraído del frame @2s. Reemplazado public/videos/empacando.mp4.
+- Notificaciones de compra flotantes (prueba social en tiempo real):
+  - CSS nuevo (~85 líneas): .lp-pn card fixed bottom-left, avatar circular con iniciales, nombre+producto+ciudad+tiempo, animación entrada/salida, responsive móvil (full width bottom arriba del sticky CTA).
+  - Datos: BUYER_NAMES (20 nombres), BUYER_CITIES (16 ciudades sin San Andrés/Amazonas), BUYER_COLORS (5 colorways).
+  - useEffect: primera notificación a los 6-10s, visible 5.5s, próxima a los 10-20s aleatorio. Avatar con color aleatorio, tiempo "hace X min" (1-14 min).
+  - JSX: card con avatar (iniciales), "Nombre compró combo Color", "Ciudad · hace X min" con icono location.
+  - Verificado: "Laura G. compró combo Verde Militar · Barranquilla · hace 8 min" apareció a los 12s en desktop. "Paula N." apareció en móvil.
+- Exclusión San Andrés y Amazonas:
+  - FAQ "¿Hacen envíos a toda Colombia?" actualizada: "No hacemos envíos a San Andrés Islas ni a Amazonas." + mencionadas las 4 transportadoras.
+  - Nota visible debajo del selector de ciudad en el formulario: "No enviamos a San Andrés Islas ni Amazonas."
+  - BUYER_CITIES (notificaciones de compra) solo incluye ciudades con envío (sin San Andrés ni Amazonas).
+- Verificación E2E:
+  - Video nuevo empacando: carga y reproduce (38s, readyState 4). ✅
+  - Notificaciones: aparecen cada 10-20s, aleatorias, con nombres/ciudades/colores reales. ✅
+  - Desktop y móvil: notificación visible y legible. ✅
+  - FAQ y formulario mencionan exclusión de San Andrés/Amazonas. ✅
+- Lint: 0 errores. Dev.log limpio.
+
+Stage Summary:
+- Video empacando reemplazado por versión editada (comprimido 58MB→8.1MB).
+- Notificaciones de compra flotantes activan prueba social en tiempo real (loss aversion + conformidad social: "otros están comprando ahora").
+- Exclusión de San Andrés y Amazonas comunicada en FAQ y formulario.
