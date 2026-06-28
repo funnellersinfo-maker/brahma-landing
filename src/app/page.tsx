@@ -28,6 +28,22 @@ const PRICE_NOW = 149900;
 const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
 const TALLAS = ["35", "36", "37", "38", "39", "40", "41", "42", "43"];
 
+/* Tiers de compra familiar — activa cerebro reptiliano (provisión + regalo) */
+type Tier = {
+  id: number;
+  qty: number;
+  unitPrice: number;
+  label: string;
+  for: string;
+  badge?: string;
+  badgeKind?: "popular" | "best";
+};
+const TIERS: Tier[] = [
+  { id: 1, qty: 1, unitPrice: 149900, label: "1 Combo", for: "Para ti" },
+  { id: 2, qty: 2, unitPrice: 139900, label: "2 Combos", for: "Para ti y tu pareja", badge: "🔥 Más popular", badgeKind: "popular" },
+  { id: 3, qty: 3, unitPrice: 129900, label: "3 Combos", for: "Para toda la familia", badge: "⭐ Mejor valor", badgeKind: "best" },
+];
+
 const BENEFITS = [
   { title: "Material durable", desc: "Sintético de alta calidad que resiste el uso diario sin desgaste.", icon: "gem" },
   { title: "Suela con agarre", desc: "Suela robusta tipo trekking, ideal para caminar todo el día.", icon: "layers" },
@@ -142,6 +158,7 @@ const formatCOP = (n: number) => "$" + n.toLocaleString("es-CO");
 export default function Home() {
   const [colorway, setColorway] = useState<Colorway>(COLORWAYS[0]);
   const [qty, setQty] = useState(1);
+  const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [tall, setTall] = useState("40");
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
@@ -166,6 +183,11 @@ export default function Home() {
 
   const incQty = () => setQty((q) => Math.min(9, q + 1));
   const decQty = () => setQty((q) => Math.max(1, q - 1));
+
+  const selectTier = (t: Tier) => {
+    setTier(t);
+    setQty(t.qty);
+  };
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -196,8 +218,8 @@ export default function Home() {
           tall,
           qty,
           color: colorway.id,
-          unitPrice: PRICE_NOW,
-          total: PRICE_NOW * qty,
+          unitPrice: tier.unitPrice,
+          total: tier.unitPrice * tier.qty,
         }),
       });
       const data = await res.json();
@@ -404,7 +426,10 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
-  const total = PRICE_NOW * qty;
+  /* El total usa el precio del tier seleccionado; si el usuario modificó qty
+     manualmente (fuera de tiers), usa PRICE_NOW como fallback */
+  const total = tier.qty * tier.unitPrice;
+  const tierSave = (PRICE_OLD - tier.unitPrice) * tier.qty;
 
   return (
     <div className="lp-root" ref={rootRef}>
@@ -545,6 +570,45 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Tier selector — compra familiar (cerebro reptiliano) */}
+              <div className="lp-variant">
+                <div className="lp-variant__label">
+                  <b>Cantidad</b>
+                  <span>Ahorra más llevando más para la familia</span>
+                </div>
+                <div className="lp-tiers">
+                  {TIERS.map((t) => {
+                    const tTotal = t.qty * t.unitPrice;
+                    const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
+                    return (
+                      <button
+                        key={t.id}
+                        type="button"
+                        className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
+                        onClick={() => selectTier(t)}
+                        aria-pressed={tier.id === t.id}
+                      >
+                        {t.badge && (
+                          <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>
+                            {t.badge}
+                          </span>
+                        )}
+                        <span className="lp-tier__radio" />
+                        <span className="lp-tier__main">
+                          <span className="lp-tier__title">{t.label}</span>
+                          <span className="lp-tier__for">{t.for}</span>
+                        </span>
+                        <span className="lp-tier__price">
+                          <span className="lp-tier__each">{formatCOP(t.unitPrice)} c/u</span>
+                          <span className="lp-tier__total">{formatCOP(tTotal)}</span>
+                          {tSave > 0 && <span className="lp-tier__save">Ahorras {formatCOP(tSave)}</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Stock bar */}
               <div className="lp-pdp__stock">
                 <div className="lp-pdp__stock-row">
@@ -556,16 +620,9 @@ export default function Home() {
 
               {/* CTA */}
               <div className="lp-pdp__cta">
-                <div className="lp-pdp__cta-row">
-                  <div className="lp-pdp__qty">
-                    <button type="button" onClick={decQty} aria-label="Restar"><Icon name="minus" style={{ width: 16, height: 16 }} /></button>
-                    <input type="text" readOnly value={qty} aria-label="Cantidad" />
-                    <button type="button" onClick={incQty} aria-label="Sumar"><Icon name="plus" style={{ width: 16, height: 16 }} /></button>
-                  </div>
-                  <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg" data-magnetic onClick={scrollToForm}>
-                    <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir ahora · {formatCOP(total)}
-                  </a>
-                </div>
+                <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
+                  <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir {tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {formatCOP(total)}
+                </a>
                 <a href="#formulario" className="lp-btn lp-btn--ghost lp-btn--block" onClick={scrollToForm}>
                   <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Comprar por WhatsApp
                 </a>
@@ -776,10 +833,11 @@ export default function Home() {
                   <li><Icon name="whatsapp" /> Confirmación por WhatsApp</li>
                 </ul>
                 <div className="lp-form-summary__price">
-                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label}, Talla {tall})</span><span>{formatCOP(PRICE_NOW)}</span></div>
+                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label}, Talla {tall})</span><span>{formatCOP(tier.unitPrice)}</span></div>
                   <div className="lp-row"><span>Gorra bordada de regalo</span><span>$0</span></div>
                   <div className="lp-row"><span>Envío</span><span>Gratis</span></div>
-                  <div className="lp-row"><span>Cantidad</span><span>{qty}</span></div>
+                  <div className="lp-row"><span>Cantidad</span><span>{tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {tier.for}</span></div>
+                  {tierSave > 0 && <div className="lp-row"><span>Ahorro por llevar {tier.qty}</span><span style={{ color: "var(--lp-amber-deep)", fontWeight: 600 }}>-{formatCOP(tierSave)}</span></div>}
                   <div className="lp-row lp-row--total"><span>Total a pagar</span><span>{formatCOP(total)}</span></div>
                 </div>
               </div>

@@ -113,3 +113,39 @@ Stage Summary:
 - Conflicto visual resuelto: el banner "OFERTA TERMINA HOY" ya no se interpone con el menú móvil desplegable.
 - El menú móvil ahora es opaco, tiene un overlay/scrim que oscurece el resto de la página, y se cierra correctamente al hacer click en un enlace o en el área oscura.
 - El banner de urgencia se renderiza debajo del header (no detrás), mejorando la jerarquía visual en móvil y desktop.
+
+---
+Task ID: 5
+Agent: orchestrator (main)
+Task: Implementar sistema de tiers de compra familiar (1/2/3 combos) con pricing psychology para aumentar ticket promedio.
+
+Work Log:
+- Diseño de estrategia neuromarketing:
+  - Tier 1: 1 combo @ $149.900 — "Para ti"
+  - Tier 2: 2 combos @ $139.900 c/u — "Para ti y tu pareja" — 🔥 Más popular
+  - Tier 3: 3 combos @ $129.900 c/u — "Para toda la familia" — ⭐ Mejor valor
+  - Ahorros totales destacados: $30.000 / $80.000 / $150.000 (loss aversion)
+  - Copy familiar activa cerebro reptiliano (provisión + regalo + generosidad justificada)
+- CSS nuevo (~125 líneas): .lp-tiers, .lp-tier (grid radio+main+price), .lp-tier__radio, .lp-tier__badge (Más popular/Mejor valor), .lp-tier__save, estados activo/hover, responsive móvil.
+- page.tsx:
+  - Añadido tipo Tier + array TIERS con datos (qty, unitPrice, label, for, badge).
+  - Estado: const [tier, setTier] = useState(TIERS[0]).
+  - Función selectTier(t) actualiza tier + qty sincronizado.
+  - total = tier.qty * tier.unitPrice; tierSave = (PRICE_OLD - tier.unitPrice) * tier.qty.
+  - handleSubmit envía tier.unitPrice y tier.qty a /api/order.
+  - Selector de tiers en hero (debajo de talla): 3 botones con radio, label, copy familiar, precio c/u, total, ahorro, badges.
+  - CTA actualizado: "Pedir X combos · $TOTAL" (ya no tiene selector de cantidad separado).
+  - Resumen del formulario muestra: precio unitario del tier, cantidad + copy familiar, línea de ahorro, total.
+- Verificación E2E:
+  - Tier 1 activo por defecto: CTA "Pedir 1 combo · $149.900". ✅
+  - Click tier 2: CTA "Pedir 2 combos · $279.800", badge "Ahorras $80.000". ✅
+  - Click tier 3: CTA "Pedir 3 combos · $389.700". ✅
+  - Submit con tier 2 → POST /api/order 200 → BD guardó qty=2, unitPrice=139900, total=279800. ✅
+  - Móvil: tiers legibles, layout limpio, badges visibles. ✅
+- Lint: 0 errores.
+
+Stage Summary:
+- Sistema de tiers familiar implementado y funcional end-to-end.
+- Psicología aplicada: anchoring (precio 1 par ancla), decoy effect (tier 1 sin descuento hace que 2 parezca ganga), loss aversion ("Ahorras $150.000" si NO compras 3), social proof ("Más popular" en tier 2), cerebro reptiliano (copy "Para toda la familia" activa instinto de provisión).
+- El tier 2 (Más popular) es el de conversión esperada; el tier 3 (Mejor valor) maximiza ticket.
+- Pedidos se guardan con el precio correcto según tier seleccionado.
