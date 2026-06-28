@@ -626,10 +626,10 @@ export default function Home() {
             {/* Info (right) */}
             <div className="lp-pdp__info lp-reveal" data-delay="1">
               <div className="lp-pdp__crumb">
-                <b>COMBO BRAHMA</b> · Monster Edition
+                <b>COMBO BRAHMA</b> · Moster Edition
               </div>
               <h1 className="lp-pdp__title">
-                Combo Brahma <em>Monster</em> Zapatos + Gorra
+                Combo Brahma <em>Moster</em> Zapatos + Gorra
               </h1>
               <p className="lp-pdp__subtitle">
                 Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
@@ -764,7 +764,7 @@ export default function Home() {
           <div className="lp-container">
             <div className="lp-section-head lp-section-head--center lp-reveal">
               <span className="lp-eyebrow">Así de fácil</span>
-              <h2>Tener tu Brahma Monster</h2>
+              <h2>Tener tu Brahma Moster</h2>
               <p>No necesitas complicarte. Solo elige, confirma y disfruta.</p>
             </div>
             <div className="lp-steps">
@@ -903,7 +903,7 @@ export default function Home() {
               <div className="lp-offer__inner">
                 <div>
                   <span className="lp-eyebrow" style={{ color: "var(--lp-amber)" }}>Oferta de lanzamiento</span>
-                  <h2>Llévate tu Combo Brahma Monster hoy</h2>
+                  <h2>Llévate tu Combo Brahma Moster hoy</h2>
                   <p className="lp-offer__sub">Incluye gorra BRAHMA en drill bordada de regalo · Pago contra entrega · Envío a toda Colombia. El precio sube cuando el reloj llegue a cero.</p>
 
                   <div className="lp-countdown" role="timer" aria-label="Cuenta regresiva">
@@ -1111,7 +1111,7 @@ export default function Home() {
             </div>
           </div>
           <div className="lp-footer__bottom">
-            <span>© {new Date().getFullYear()} BRAHMA Monster · Hecho en Colombia.</span>
+            <span>© {new Date().getFullYear()} BRAHMA Moster · Hecho en Colombia.</span>
             <div className="lp-footer__pay">
               <span>CONTRA ENTREGA</span>
               <span>EFECTIVO</span>

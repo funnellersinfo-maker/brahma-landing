@@ -17,7 +17,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  title: "COMBO BRAHMA Monster Zapatos + Gorra | Pago Contra Entrega en Colombia",
+  title: "COMBO BRAHMA Moster Zapatos + Gorra | Pago Contra Entrega en Colombia",
   description:
     "Combo premium de tenis urbanos BRAHMA + gorra bordada. Envío gratis a todo Colombia. Pago Contra Entrega: pagas solo al recibir. Garantía de 30 días.",
   keywords: [
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     apple: "/images/logo-brahma.png",
   },
   openGraph: {
-    title: "COMBO BRAHMA Monster Zapatos + Gorra",
+    title: "COMBO BRAHMA Moster Zapatos + Gorra",
     description:
       "Tenis urbanos premium + gorra bordada. Pago Contra Entrega en toda Colombia. Envío gratis y garantía de 30 días.",
     siteName: "BRAHMA",
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "COMBO BRAHMA Monster Zapatos + Gorra",
+    title: "COMBO BRAHMA Moster Zapatos + Gorra",
     description:
       "Tenis urbanos premium + gorra bordada. Pago Contra Entrega en Colombia. Envío gratis.",
   },
