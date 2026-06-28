@@ -8,6 +8,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import "./landing.css";
+import { trackMeta } from "@/lib/pixel";
 
 /* ------------------------------------------------------------------ */
 /*  DATOS                                                              */
@@ -206,6 +207,18 @@ export default function Home() {
     window.setTimeout(() => setToast(null), 4500);
   }, []);
 
+  // Meta Pixel: ViewContent al montar (usuario vio el producto)
+  useEffect(() => {
+    trackMeta("ViewContent", {
+      content_name: "Combo Brahma Moster",
+      content_category: "Calzado",
+      content_ids: ["brahma-moster"],
+      content_type: "product",
+      value: 149900,
+      currency: "COP",
+    });
+  }, []);
+
   const selectColorway = (cw: Colorway) => {
     setColorway(cw);
     setForm((f) => ({ ...f }));
@@ -238,36 +251,51 @@ export default function Home() {
       return;
     }
     setSubmitting(true);
-    try {
-      const res = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          phone: form.phone.trim(),
-          city: form.city.trim(),
-          address: form.address.trim(),
-          tall,
-          qty,
-          color: colorway.id,
-          unitPrice: tier.unitPrice,
-          total: tier.unitPrice * tier.qty,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Error");
-      showToast("¡Pedido registrado! Te contactaremos por WhatsApp en minutos.", "success");
-      setForm({ name: "", phone: "", city: "", address: "" });
-      setQty(1);
-    } catch {
-      showToast("No pudimos registrar tu pedido. Intenta de nuevo.", "error");
-    } finally {
+
+    // Meta Pixel: Lead (usuario envió el formulario → conversión principal)
+    trackMeta("Lead", {
+      content_name: "Combo Brahma Moster",
+      content_category: "Calzado",
+      value: total,
+      currency: "COP",
+    });
+
+    // Construir mensaje de WhatsApp con todos los datos del pedido
+    const mensaje =
+      `🛒 *NUEVO PEDIDO - BRAHMA*\n\n` +
+      `👤 *Nombre:* ${form.name.trim()}\n` +
+      `📱 *Celular:* ${form.phone.trim()}\n` +
+      `🏙️ *Ciudad:* ${form.city.trim()}\n` +
+      `🏠 *Dirección:* ${form.address.trim()}\n\n` +
+      `👟 *Detalle:*\n   Color: ${colorway.label} · Talla: ${tall}\n\n` +
+      `📦 *Cantidad:* ${tier.qty} ${tier.qty > 1 ? "combos" : "combo"}\n` +
+      `💵 *Precio c/u:* ${formatCOP(tier.unitPrice)}\n` +
+      `💰 *Total a pagar:* ${formatCOP(total)}\n` +
+      `💸 *Ahorras:* ${formatCOP(tierSave)}\n\n` +
+      `✅ *Pago Contra Entrega*`;
+
+    const waNumber = "573228973800";
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(mensaje)}`;
+
+    showToast("Abriendo WhatsApp con tu pedido...", "success");
+    window.setTimeout(() => {
+      window.open(waUrl, "_blank");
       setSubmitting(false);
-    }
+      setForm({ name: "", phone: "", city: "", address: "" });
+    }, 600);
   };
 
   const scrollToForm = (e: React.MouseEvent) => {
     e.preventDefault();
+    // Meta Pixel: InitiateCheckout (usuario hizo clic en CTA → formulario)
+    trackMeta("InitiateCheckout", {
+      content_name: "Combo Brahma Moster",
+      content_ids: ["brahma-moster"],
+      content_type: "product",
+      num_items: tier.qty,
+      value: total,
+      currency: "COP",
+    });
     const el = document.getElementById("formulario");
     if (el) {
       const top = el.getBoundingClientRect().top + window.scrollY - 64;
