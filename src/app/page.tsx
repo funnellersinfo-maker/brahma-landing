@@ -1,8 +1,9 @@
 "use client";
 
 /* =====================================================================
-   BRAHMA — Landing Premium · Página principal
-   13 secciones · HTML semántico · JS vanilla en hooks · CRO-first
+   BRAHMA — Landing Premium v2 (PDP-style + 3 testimonios WhatsApp)
+   Orden CRO: Hero PDP → 3 Pasos → Beneficios → Testimonios WhatsApp
+              → Oferta → Garantía → FAQ → Formulario
    ===================================================================== */
 
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -12,101 +13,77 @@ import "./landing.css";
 /*  DATOS                                                              */
 /* ------------------------------------------------------------------ */
 
-type Colorway = { id: string; label: string; img: string; swatch: string };
+type Colorway = { id: string; label: string; img: string; swatch: string; hex: string };
 
 const COLORWAYS: Colorway[] = [
-  { id: "beige", label: "Arena", img: "/images/combo-beige.jpg", swatch: "beige" },
-  { id: "brown", label: "Café", img: "/images/combo-brown.jpg", swatch: "brown" },
-  { id: "olive", label: "Oliva", img: "/images/combo-olive.jpg", swatch: "olive" },
-  { id: "blue", label: "Azul Noche", img: "/images/combo-blue.jpg", swatch: "blue" },
-  { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black" },
+  { id: "beige", label: "Arena", img: "/images/combo-beige.jpg", swatch: "beige", hex: "#cdb89a" },
+  { id: "brown", label: "Café", img: "/images/combo-brown.jpg", swatch: "brown", hex: "#6b4a2e" },
+  { id: "olive", label: "Oliva", img: "/images/combo-olive.jpg", swatch: "olive", hex: "#5a5a32" },
+  { id: "blue", label: "Azul Noche", img: "/images/combo-blue.jpg", swatch: "blue", hex: "#3a4a63" },
+  { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black", hex: "#1a1a1c" },
 ];
 
 const PRICE_OLD = 219000;
 const PRICE_NOW = 119900;
+const TALLAS = ["36", "37", "38", "39", "40", "41", "42", "43"];
 
 const BENEFITS = [
-  {
-    title: "Pago Contra Entrega",
-    desc: "Paga solo cuando recibas tu combo en la puerta de tu casa. Cero riesgo, cero fraude.",
-    icon: "cash",
-  },
-  {
-    title: "Envío Gratis a Todo Colombia",
-    desc: "Despacho en 24h y entrega en 2 a 4 días hábiles. Sin costos ocultos, sin sorpresas.",
-    icon: "truck",
-  },
-  {
-    title: "Garantía de 30 Días",
-    desc: "¿No te convence? Te devolvemos tu dinero. Tu satisfacción es la única condición.",
-    icon: "shield",
-  },
-  {
-    title: "Materiales Premium",
-    desc: "Cuero sintético de alta densidad, interior acolchado y costuras reforzadas.",
-    icon: "gem",
-  },
-  {
-    title: "Suela Antideslizante",
-    desc: "Goma de alta fricción con amortiguación. Estabilidad real en cada pisada.",
-    icon: "layers",
-  },
-  {
-    title: "Gorra Bordada Premium",
-    desc: "Bordado 3D con hilo resistente, visera curva pre-moldeada y cierre ajustable.",
-    icon: "crown",
-  },
+  { title: "Material durable", desc: "Sintético de alta calidad que resiste el uso diario sin desgaste.", icon: "gem" },
+  { title: "Suela con agarre", desc: "Suela robusta tipo trekking, ideal para caminar todo el día.", icon: "layers" },
+  { title: "Detalles en contraste", desc: "Costuras y acabados que elevan el diseño al siguiente nivel.", icon: "sparkle" },
+  { title: "Confort todo el día", desc: "Plantilla acolchada para uso prolongado sin molestias.", icon: "heart" },
+  { title: "Gorra bordada de regalo", desc: "Gorra BRAHMA en drill bordada, incluida sin costo extra.", icon: "crown" },
+  { title: "Estilo versátil", desc: "Combina con cualquier outfit urbano o casual.", icon: "bolt" },
 ];
 
-const GALLERY = COLORWAYS.map((c) => ({ src: c.img, alt: `Combo BRAHMA color ${c.label}` }));
-
-const LIFE_TILES = [
-  { src: "/images/combo-brown.jpg", cap: "Daily Ready", sub: "Look urbano", cls: "a" },
-  { src: "/images/combo-black.jpg", cap: "After Dark", sub: "Edición nocturna", cls: "b" },
-  { src: "/images/combo-blue.jpg", cap: "City Walk", sub: "Comfort +", cls: "c" },
-  { src: "/images/combo-olive.jpg", cap: "Off Duty", sub: "Estilo libre", cls: "d" },
+const STEPS = [
+  { num: "1", title: "Elige color y talla", desc: "Selecciona la combinación que más te guste entre 5 colores disponibles." },
+  { num: "2", title: "Confirma tu pedido", desc: "Llena tus datos y paga contraentrega cuando recibas tu combo en la puerta de tu casa." },
+  { num: "3", title: "Disfruta tu combo", desc: "Recibe tu calzado BRAHMA junto con tu gorra bordada, lista para usar." },
 ];
 
-const COMPARE_US = [
-  "Pago Contra Entrega — pagas al recibir",
-  "Envío gratis a todo el país",
-  "Gorra bordada incluida en el combo",
-  "Garantía de devolución de 30 días",
-  "Materiales premium verificados",
-  "Atención por WhatsApp 7 días/semana",
-];
-const COMPARE_THEM = [
-  "Pago anticipado con tarjeta",
-  "Envío con costo adicional",
-  "Gorra vendida por separado",
-  "Sin garantía o solo 7 días",
-  "Materiales genéricos",
-  "Soporte solo por correo",
-];
-
-const TESTIMONIALS = [
-  { name: "Andrés Gómez", city: "Bogotá", initials: "AG", color: "#1a1a1c", stars: 5,
-    quote: "Llegó en 3 días y pagué cuando lo tuve en la mano. Los tenis se sienten caros, la gorra es una belleza. Repetiré sin dudar." },
-  { name: "Valentina Ríos", city: "Medellín", initials: "VR", color: "#3a4a63", stars: 5,
-    quote: "Pensé que era estafa por el precio pero la calidad me sorprendió. El combo completo por menos de lo que vale un par solo en centros comerciales." },
-  { name: "Sebastián Marín", city: "Cali", initials: "SM", color: "#6b4a2e", stars: 5,
-    quote: "La contra entrega me dio toda la confianza. Producto tal cual las fotos, bien empacado. 10/10." },
-  { name: "Camila Torres", city: "Barranquilla", initials: "CT", color: "#5a5a32", stars: 4,
-    quote: "Compré para mi novio y le encantó. Talla perfecta gracias a la guía. La gorra bordada se ve premium de verdad." },
-  { name: "David Ruiz", city: "Bucaramanga", initials: "DR", color: "#b87a1e", stars: 5,
-    quote: "Llevo 2 semanas usándolos a diario y están intactos. La suela agarra súper bien. Mejor compra del año." },
-  { name: "Mariana López", city: "Pereira", initials: "ML", color: "#1a1a1c", stars: 5,
-    quote: "El servicio al cliente respondió en 2 minutos por WhatsApp. Pedí 2 combos para mi hermano y yo. Llegaron impecables." },
+const WA_TESTIMONIALS = [
+  {
+    name: "Juliana P.",
+    initials: "JP",
+    photo: "/images/wa-juliana.png",
+    photoCaption: "Combo Azul Noche",
+    message: "Le regalé las Brahma a mi novio y casi llora de la emoción jaja 😂🎁 Dice que son las zapatillas más cómodas que ha tenido. La suela gruesa le da altura y el azul marino combina con todo. ¡Qué buena compra, gracias!! 💙👟",
+    time: "5:30 PM",
+    stars: 5,
+    city: "Bogotá",
+  },
+  {
+    name: "Nicolás R.",
+    initials: "NR",
+    photo: "/images/wa-nicolas.png",
+    photoCaption: "Combo Negro",
+    message: "Parcero el combo negro es una OBRA DE ARTE ❤️🔥 Todo negro con el acabado en blanco del bordado es un detalle de lujo. Las zapatillas se sienten sólidas y livianas al mismo tiempo, y la gorra es de muy buena tela. No esperaba que la gorra viniera incluida 💙💯",
+    time: "5:10 PM",
+    stars: 5,
+    city: "Medellín",
+  },
+  {
+    name: "Mauricio V.",
+    initials: "MV",
+    photo: "/images/wa-mauricio.png",
+    photoCaption: "Combo Azul",
+    message: "Llevo 3 meses usándolas para trabajar y están como nuevas 🤔🔥 No se ha gastado la suela, no se han destenido y la tela sigue intacta. Eso es calidad real, no porquerías. Ya voy a pedir otro par de respaldo 💪",
+    time: "9:15 PM",
+    stars: 5,
+    city: "Cali",
+  },
 ];
 
 const FAQS = [
-  { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, nosotros confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. No pagas nada por adelantado." },
-  { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos en 24 horas hábiles. La entrega tarda de 2 a 4 días hábiles según tu ciudad. Bogotá, Medellín y Cali suelen recibir en 2 días; ciudades intermedias en 3-4 días." },
-  { q: "¿El envío tiene costo adicional?", a: "No. El envío es 100% gratis a todo Colombia. El precio que ves es el precio que pagas, sin sorpresas." },
-  { q: "¿Cómo elijo mi talla correcta?", a: "Nuestros tenis tallan igual que tu talla habitual. Si dudas entre dos tallas, te recomendamos la más grande. Después de tu pedido te contactamos por WhatsApp para confirmar talla y color antes de despachar." },
-  { q: "¿Qué pasa si no me gusta o no sirve?", a: "Tienes 30 días de garantía. Si el producto no te convence, te devolvemos tu dinero o lo cambiamos por otra talla/color. Sin preguntas difíciles." },
-  { q: "¿El combo incluye gorra y tenis?", a: "Sí. El combo incluye un par de tenis urbanos BRAHMA + una gorra premium bordada, en el color que elijas. Todo por el precio promocional." },
-  { q: "¿Puedo pagar con tarjeta o transferencia?", a: "El método principal es Contra Entrega en efectivo. Si prefieres tarjeta o transferencia (con descuento adicional), escríbenos por WhatsApp y te ayudamos." },
+  { q: "¿La gorra realmente es gratis?", a: "Sí, la gorra BRAHMA en drill bordada va incluida sin costo adicional con la compra de tu combo. No es un complemento aparte, viene en la misma caja." },
+  { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. Cero pago anticipado, cero riesgo." },
+  { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 37 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
+  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, realizamos envíos a nivel nacional a través de transportadoras certificadas. El envío es 100% gratis, sin costos ocultos." },
+  { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos en 24 horas hábiles. La entrega tarda de 1 a 5 días hábiles según tu ciudad. Bogotá, Medellín y Cali suelen recibir en 1-2 días." },
+  { q: "¿Qué pasa si la talla no me queda bien?", a: "Tienes derecho a cambio de talla siguiendo nuestra política. Contáctanos apenas recibas tu pedido y lo solucionamos. Tu satisfacción es la única condición." },
+  { q: "¿Puedo pagar con tarjeta o transferencia?", a: "El método principal es Contra Entrega en efectivo. Si prefieres tarjeta o transferencia (con descuento adicional), escríbenos por WhatsApp." },
+  { q: "¿El combo incluye tenis y gorra?", a: "Sí. El combo incluye un par de tenis urbanos BRAHMA + una gorra premium bordada, en el color que elijas. Todo por el precio promocional." },
 ];
 
 const CITIES = [
@@ -132,19 +109,21 @@ const Icon = ({ name, ...props }: { name: string } & React.SVGProps<SVGSVGElemen
     play: <path d="M8 5v14l11-7L8 5z" />,
     chevL: <path d="M15 6l-6 6 6 6V6z" />,
     chevR: <path d="M9 6l6 6-6 6V6z" />,
-    chevD: <path d="M6 9l6 6 6-6H6z" />,
     plus: <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" />,
     minus: <path d="M5 11h14v2H5v-2z" />,
-    zoom: <path d="M15.5 14h-.8l-.3-.3a6.5 6.5 0 10-.7.7l.3.3v.8l5 5 1.5-1.5-5-5zm-6 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z" />,
     lock: <path d="M6 10V8a6 6 0 1112 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V8a4 4 0 10-8 0v2z" />,
     star: <path d="M12 2l3 6.5 7 .9-5 4.8 1.3 7L12 18l-6.3 3.2L7 14.2 2 9.4l7-.9L12 2z" />,
     location: <path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" />,
     whatsapp: <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.2-.7-2.7-1.1-4.4-3.8-4.5-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.2 1.7 2 .9.7 1.6.9 1.9 1 .2 0 .4 0 .5-.1l.7-.8c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .7-.3 1.2z" />,
     bolt: <path d="M11 21l8-12h-5l2-8-8 12h5l-2 8z" />,
-    arrowD: <path d="M11 4h2v12.2l4.6-4.6L19 13l-7 7-7-7 1.4-1.4L11 16.2V4z" />,
-    refresh: <path d="M12 5V2L7 7l5 5V8a5 5 0 11-5 5H5a7 7 0 107-8z" />,
-    heart: <path d="M12 21l-1.5-1.4C5 14.8 2 12 2 8.5A4.5 4.5 0 016.5 4c1.5 0 3 .7 4 2 1-1.3 2.5-2 4-2A4.5 4.5 0 0119 8.5c0 3.5-3 6.3-8.5 11.1L12 21z" />,
+    arrowR: <path d="M4 11h12.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2z" />,
     sparkle: <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />,
+    heart: <path d="M12 21l-1.5-1.4C5 14.8 2 12 2 8.5A4.5 4.5 0 016.5 4c1.5 0 3 .7 4 2 1-1.3 2.5-2 4-2A4.5 4.5 0 0119 8.5c0 3.5-3 6.3-8.5 11.1L12 21z" />,
+    refresh: <path d="M12 5V2L7 7l5 5V8a5 5 0 11-5 5H5a7 7 0 107-8z" />,
+    clock: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 10.6l4 2.3-1 1.7-5-2.9V6h2v6.6z" />,
+    checkDouble: <path d="M18 7l-9 9-4-4-1.4 1.4L9 19l10.4-10.6L18 7zm-3.6 0L9 12.4 7.6 11 6.2 12.4l2.8 2.8 7.8-7.8L14.4 7z" />,
+    fire: <path d="M13 1c1 3-1 5-2.5 6.5C9 9 8 10.5 8 13a4 4 0 008 0c0-2-1-3.5-2-5 .5 2-.5 3-1.5 3 1.5-3-.5-7-3-10 .5 4-3 5-3 9a6 6 0 0012 0c0-4-2-7-5-9z" />,
+    bag: <path d="M6 8h12l1 13H5L6 8zm3-2a3 3 0 016 0v2h-2V6a1 1 0 10-2 0v2H9V6z" />,
   };
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -153,8 +132,7 @@ const Icon = ({ name, ...props }: { name: string } & React.SVGProps<SVGSVGElemen
   );
 };
 
-const formatCOP = (n: number) =>
-  "$" + n.toLocaleString("es-CO");
+const formatCOP = (n: number) => "$" + n.toLocaleString("es-CO");
 
 /* ------------------------------------------------------------------ */
 /*  COMPONENTE PRINCIPAL                                               */
@@ -163,73 +141,31 @@ const formatCOP = (n: number) =>
 export default function Home() {
   const [colorway, setColorway] = useState<Colorway>(COLORWAYS[0]);
   const [qty, setQty] = useState(1);
-  const [heroImg, setHeroImg] = useState(COLORWAYS[0].img);
-  const [galleryIdx, setGalleryIdx] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxIdx, setLightboxIdx] = useState(0);
+  const [tall, setTall] = useState("40");
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "", qty: 1, color: "beige" });
+  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
-  const [tall, setTall] = useState("38");
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const galleryStageRef = useRef<HTMLImageElement>(null);
   const cinemaIdxRef = useRef(0);
-  const galleryIdxRef = useRef(0);
-  const lightboxIdxRef = useRef(0);
 
-  /* ---------------- TOAST helper ---------------- */
   const showToast = useCallback((msg: string, type: "success" | "error" | "info" = "success") => {
     setToast({ msg, type });
-    window.setTimeout(() => setToast(null), 4200);
+    window.setTimeout(() => setToast(null), 4500);
   }, []);
 
-  /* ---------------- Colorway change ---------------- */
   const selectColorway = (cw: Colorway) => {
     setColorway(cw);
-    setHeroImg(cw.img);
-    setForm((f) => ({ ...f, color: cw.id }));
-    // sync gallery to this colorway
-    const gi = COLORWAYS.findIndex((c) => c.id === cw.id);
-    if (gi >= 0) setGalleryIdx(gi);
+    setForm((f) => ({ ...f }));
   };
 
-  /* ---------------- Gallery navigation ---------------- */
-  const goGallery = (dir: number) => {
-    setGalleryIdx((prev) => {
-      const n = (prev + dir + GALLERY.length) % GALLERY.length;
-      galleryIdxRef.current = n;
-      return n;
-    });
-  };
-  const openLightbox = (i: number) => {
-    setLightboxIdx(i);
-    lightboxIdxRef.current = i;
-    setLightboxOpen(true);
-    document.body.style.overflow = "hidden";
-  };
-  const closeLightbox = () => {
-    setLightboxOpen(false);
-    document.body.style.overflow = "";
-  };
-  const goLightbox = (dir: number) => {
-    setLightboxIdx((prev) => {
-      const n = (prev + dir + GALLERY.length) % GALLERY.length;
-      lightboxIdxRef.current = n;
-      return n;
-    });
-  };
-
-  /* ---------------- FAQ toggle ---------------- */
   const toggleFaq = (i: number) => setFaqOpen((p) => (p === i ? null : i));
 
-  /* ---------------- Quantity ---------------- */
   const incQty = () => setQty((q) => Math.min(9, q + 1));
   const decQty = () => setQty((q) => Math.max(1, q - 1));
 
-  /* ---------------- Form validation + submit ---------------- */
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name.trim() || form.name.trim().length < 3) e.name = "Escribe tu nombre completo";
@@ -257,16 +193,16 @@ export default function Home() {
           city: form.city.trim(),
           address: form.address.trim(),
           tall,
-          qty: form.qty,
-          color: form.color,
+          qty,
+          color: colorway.id,
           unitPrice: PRICE_NOW,
-          total: PRICE_NOW * form.qty,
+          total: PRICE_NOW * qty,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error");
       showToast("¡Pedido registrado! Te contactaremos por WhatsApp en minutos.", "success");
-      setForm({ name: "", phone: "", city: "", address: "", qty: 1, color: colorway.id });
+      setForm({ name: "", phone: "", city: "", address: "" });
       setQty(1);
     } catch {
       showToast("No pudimos registrar tu pedido. Intenta de nuevo.", "error");
@@ -275,16 +211,22 @@ export default function Home() {
     }
   };
 
+  const scrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const el = document.getElementById("formulario");
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
+  };
+
   /* ================================================================ */
   /*  EFECTOS — Lógica vanilla JS                                     */
   /* ================================================================ */
-
-  // 1. Header scroll + sticky CTAs visibility + smooth scroll + reveal + ripple + magnetic + cursor + counters + parallax
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
 
-    /* --- Header blur on scroll --- */
     const header = root.querySelector<HTMLElement>(".lp-header");
     const stickyCta = root.querySelector<HTMLElement>(".lp-sticky-cta");
     const buyBar = root.querySelector<HTMLElement>(".lp-buy-bar");
@@ -294,14 +236,9 @@ export default function Home() {
       const y = window.scrollY;
       const vh = window.innerHeight;
       header?.classList.toggle("is-scrolled", y > 24);
-      // sticky mobile CTA: aparece tras pasar ~85% del primer viewport (robusto a imágenes)
-      if (stickyCta) {
-        stickyCta.classList.toggle("is-visible", y > vh * 0.85);
-      }
-      // desktop buy bar: aparece tras 1 viewport y se oculta cerca del formulario
+      if (stickyCta) stickyCta.classList.toggle("is-visible", y > vh * 0.85);
       if (buyBar && formSec) {
-        const formTop = formSec.offsetTop;
-        const show = y > vh * 0.9 && (formTop < 1000 || y < formTop - vh * 0.8);
+        const show = y > vh * 0.9 && y < formSec.offsetTop - vh * 0.8;
         buyBar.classList.toggle("is-visible", show);
       }
     };
@@ -309,10 +246,8 @@ export default function Home() {
     window.addEventListener("resize", onScroll);
     window.addEventListener("load", onScroll);
     onScroll();
-    // recálculo tras posible carga tardía de imágenes
     const recalcTimer = window.setTimeout(onScroll, 700);
 
-    /* --- Smooth scroll for anchor links --- */
     const onClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const link = target.closest('a[href^="#"]') as HTMLAnchorElement | null;
@@ -324,14 +259,12 @@ export default function Home() {
         e.preventDefault();
         const top = el.getBoundingClientRect().top + window.scrollY - 64;
         window.scrollTo({ top, behavior: "smooth" });
-        // close mobile menu
         root.querySelector(".lp-mobile-menu")?.classList.remove("is-open");
         root.querySelector(".lp-menu-btn")?.classList.remove("is-open");
       }
     };
     root.addEventListener("click", onClick);
 
-    /* --- IntersectionObserver reveal --- */
     const reveals = root.querySelectorAll<HTMLElement>(".lp-reveal");
     const io = new IntersectionObserver(
       (entries) => {
@@ -346,7 +279,6 @@ export default function Home() {
     );
     reveals.forEach((el) => io.observe(el));
 
-    /* --- Animated counters --- */
     const counters = root.querySelectorAll<HTMLElement>("[data-count]");
     const ioCount = new IntersectionObserver(
       (entries) => {
@@ -372,7 +304,6 @@ export default function Home() {
     );
     counters.forEach((el) => ioCount.observe(el));
 
-    /* --- Ripple on .lp-btn --- */
     const onRipple = (e: MouseEvent) => {
       const btn = (e.target as HTMLElement).closest(".lp-btn") as HTMLElement | null;
       if (!btn) return;
@@ -388,9 +319,8 @@ export default function Home() {
     };
     root.addEventListener("mousedown", onRipple);
 
-    /* --- Magnetic hover on .lp-btn--primary --- */
-    const magnets: HTMLElement[] = [];
     const finePointer = window.matchMedia("(pointer: fine)").matches;
+    const magnets: HTMLElement[] = [];
     if (finePointer) {
       root.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
         magnets.push(el);
@@ -400,13 +330,10 @@ export default function Home() {
           const my = e.clientY - r.top - r.height / 2;
           el.style.transform = `translate(${mx * 0.18}px, ${my * 0.28}px)`;
         });
-        el.addEventListener("mouseleave", () => {
-          el.style.transform = "";
-        });
+        el.addEventListener("mouseleave", () => { el.style.transform = ""; });
       });
     }
 
-    /* --- Custom cursor --- */
     let cursor: HTMLElement | null = null;
     let ring: HTMLElement | null = null;
     if (finePointer) {
@@ -418,45 +345,20 @@ export default function Home() {
       document.body.appendChild(ring);
       const move = (e: MouseEvent) => {
         if (cursor) { cursor.style.left = e.clientX + "px"; cursor.style.top = e.clientY + "px"; }
-      };
-      const moveRing = (e: MouseEvent) => {
         if (ring) { ring.style.left = e.clientX + "px"; ring.style.top = e.clientY + "px"; }
       };
       window.addEventListener("mousemove", move);
-      window.addEventListener("mousemove", moveRing);
-      const hoverTargets = root.querySelectorAll("a, button, .lp-cinema, .lp-gallery__stage, .lp-thumb, .lp-swatch, .lp-life__tile");
+      const hoverTargets = root.querySelectorAll("a, button, .lp-pdp__stage, .lp-pdp__thumb, .lp-color-btn, .lp-talla, .lp-wa");
       hoverTargets.forEach((t) => {
         t.addEventListener("mouseenter", () => { cursor?.classList.add("is-hover"); ring?.classList.add("is-hover"); });
         t.addEventListener("mouseleave", () => { cursor?.classList.remove("is-hover"); ring?.classList.remove("is-hover"); });
       });
     }
 
-    /* --- Light parallax on hero visual & life tiles --- */
-    let ticking = false;
-    const onParallax = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const heroVis = root.querySelector<HTMLElement>(".lp-hero__visual img");
-        if (heroVis && y < 900) heroVis.style.transform = `translateY(${y * 0.06}px) scale(1.02)`;
-        ticking = false;
-      });
-    };
-    if (finePointer) window.addEventListener("scroll", onParallax, { passive: true });
-
-    /* --- Escape closes lightbox --- */
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeLightbox();
-    };
-    window.addEventListener("keydown", onKey);
-
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       window.removeEventListener("load", onScroll);
-      window.removeEventListener("scroll", onParallax);
-      window.removeEventListener("keydown", onKey);
       root.removeEventListener("click", onClick);
       root.removeEventListener("mousedown", onRipple);
       window.clearTimeout(recalcTimer);
@@ -464,29 +366,17 @@ export default function Home() {
       ioCount.disconnect();
       cursor?.remove();
       ring?.remove();
-      magnets.forEach((el) => (el.style.transform = ""));
     };
   }, []);
 
-  // 2. Cinema autoplay (cross-fade Ken Burns)
-  useEffect(() => {
-    const slides = document.querySelectorAll<HTMLElement>(".lp-cinema__slide");
-    if (!slides.length) return;
-    const interval = window.setInterval(() => {
-      cinemaIdxRef.current = (cinemaIdxRef.current + 1) % slides.length;
-      slides.forEach((s, i) => s.classList.toggle("is-active", i === cinemaIdxRef.current));
-    }, 3800);
-    return () => window.clearInterval(interval);
-  }, []);
-
-  // 3. Countdown timer (resets daily to end of day in Bogota)
+  // Countdown timer (end of day)
   useEffect(() => {
     const units = document.querySelectorAll<HTMLElement>("[data-cd]");
     if (!units.length) return;
     const tick = () => {
       const now = new Date();
       const end = new Date();
-      end.setHours(23, 59, 59, 999); // end of today
+      end.setHours(23, 59, 59, 999);
       let diff = Math.max(0, end.getTime() - now.getTime());
       const h = Math.floor(diff / 3600000); diff -= h * 3600000;
       const m = Math.floor(diff / 60000); diff -= m * 60000;
@@ -499,35 +389,16 @@ export default function Home() {
     return () => window.clearInterval(id);
   }, []);
 
-  // 4. Stock bar animate on view + subtle live countdown
+  // Stock bar animate on view
   useEffect(() => {
-    const bar = document.querySelector<HTMLElement>(".lp-stock__fill");
-    const numEl = document.querySelector<HTMLElement>("[data-stock]");
-    if (!bar || !numEl) return;
-    let stock = 37;
+    const bar = document.querySelector<HTMLElement>(".lp-pdp__stock-fill");
+    if (!bar) return;
     const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          bar.style.width = "22%";
-          io.disconnect();
-        }
-      });
+      entries.forEach((e) => { if (e.isIntersecting) { bar.style.width = "22%"; io.disconnect(); } });
     }, { threshold: 0.4 });
     io.observe(bar);
-    // occasionally decrement stock for scarcity feel
-    const id = window.setInterval(() => {
-      if (stock <= 9) { window.clearInterval(id); return; }
-      if (Math.random() > 0.7) {
-        stock -= 1;
-        numEl.textContent = String(stock);
-      }
-    }, 14000);
-    return () => { io.disconnect(); window.clearInterval(id); };
+    return () => io.disconnect();
   }, []);
-
-  /* ================================================================ */
-  /*  RENDER                                                           */
-  /* ================================================================ */
 
   const total = PRICE_NOW * qty;
 
@@ -542,10 +413,9 @@ export default function Home() {
           </a>
           <nav className="lp-nav" aria-label="Principal">
             <a href="#beneficios">Beneficios</a>
-            <a href="#galeria">Galería</a>
-            <a href="#comparativa">Comparativa</a>
             <a href="#opiniones">Opiniones</a>
             <a href="#faq">Preguntas</a>
+            <a href="#oferta">Oferta</a>
           </nav>
           <div className="lp-header__cta">
             <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic>
@@ -557,125 +427,182 @@ export default function Home() {
             const m = document.querySelector(".lp-mobile-menu");
             b.classList.toggle("is-open");
             m?.classList.toggle("is-open");
-          }}>
-            <span />
-          </button>
+          }}><span /></button>
         </div>
       </header>
       <div className="lp-mobile-menu">
         <a href="#beneficios">Beneficios</a>
-        <a href="#galeria">Galería</a>
-        <a href="#comparativa">Comparativa</a>
         <a href="#opiniones">Opiniones</a>
         <a href="#faq">Preguntas</a>
+        <a href="#oferta">Oferta</a>
         <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--block">Comprar ahora</a>
       </div>
 
       <main className="lp-main" id="top">
-        {/* ============ 1. HERO ============ */}
-        <section className="lp-hero" id="hero">
-          <div className="lp-hero__bg" />
-          <div className="lp-hero__grain" />
-          <div className="lp-container lp-hero__grid">
-            <div className="lp-hero__copy">
-              <div className="lp-hero__badges lp-reveal">
-                <span className="lp-pill lp-pill--amber"><Icon name="cash" /> Pago Contra Entrega</span>
-                <span className="lp-pill"><Icon name="truck" /> Envío Gratis</span>
-                <span className="lp-pill lp-pill--success"><Icon name="shield" /> Garantía 30 días</span>
+
+        {/* ============ URGENCY STRIP ============ */}
+        <div className="lp-urgency">
+          <span className="lp-pulse-dot" />
+          <span><b>OFERTA TERMINA HOY</b> · Pago Contra Entrega · Envío Gratis · 🎁 Gorra bordada incluida</span>
+        </div>
+
+        {/* ============ HERO PDP ============ */}
+        <section className="lp-pdp" id="hero">
+          <div className="lp-pdp__bg" />
+          <div className="lp-container lp-pdp__grid">
+
+            {/* Gallery (left) */}
+            <div className="lp-pdp__gallery lp-reveal lp-reveal--scale">
+              <div className="lp-pdp__stage">
+                <img src={colorway.img} alt={`Combo BRAHMA color ${colorway.label}`} fetchPriority="high" />
+                <div className="lp-pdp__badge-discount">
+                  <small>Ahorra</small> 45% HOY
+                </div>
+                <div className="lp-pdp__views">
+                  <span className="lp-dot" /> 38 personas viendo esto
+                </div>
               </div>
-
-              <h1 className="lp-reveal" data-delay="1">
-                El combo que <span className="lp-grad">eleva</span> tu estilo urbano.
-              </h1>
-
-              <p className="lp-hero__sub lp-reveal" data-delay="2">
-                Tenis urbanos de materiales premium + gorra bordada. Diseñados para quienes
-                no se conforman. Págalo cuando lo tengas en tus manos.
-              </p>
-
-              {/* Colorway selector */}
-              <div className="lp-colorways lp-reveal" data-delay="2" role="group" aria-label="Color">
-                <span className="lp-colorways__label">{colorway.label}</span>
+              <div className="lp-pdp__thumbs">
                 {COLORWAYS.map((c) => (
-                  <button
-                    key={c.id}
-                    className={`lp-swatch lp-swatch--${c.swatch} ${colorway.id === c.id ? "is-active" : ""}`}
-                    aria-label={`Color ${c.label}`}
-                    aria-pressed={colorway.id === c.id}
-                    onClick={() => selectColorway(c)}
-                  />
+                  <button key={c.id} className={`lp-pdp__thumb ${colorway.id === c.id ? "is-active" : ""}`}
+                    aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
+                    <img src={c.img} alt="" loading="lazy" />
+                  </button>
                 ))}
-              </div>
-
-              <div className="lp-price lp-reveal" data-delay="3">
-                <span className="lp-price__old">{formatCOP(PRICE_OLD)}</span>
-                <span className="lp-price__now">{formatCOP(PRICE_NOW)}</span>
-                <span className="lp-price__save">Ahorra 45%</span>
-              </div>
-
-              <div className="lp-hero__actions lp-reveal" data-delay="3">
-                <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg" data-magnetic>
-                  <Icon name="bolt" style={{ width: 18, height: 18 }} /> Quiero el combo
-                </a>
-                <a href="#galeria" className="lp-btn lp-btn--ghost lp-btn--lg">
-                  Ver galería
-                </a>
-              </div>
-
-              <div className="lp-hero__trust lp-reveal" data-delay="4">
-                <span><Icon name="check" /> +12.000 clientes felices</span>
-                <span><Icon name="star" /> 4.9/5 valoración</span>
-                <span><Icon name="check" /> Despacho en 24h</span>
               </div>
             </div>
 
-            <div className="lp-hero__visual lp-reveal lp-reveal--scale" data-delay="2">
-              <img src={heroImg} alt="Combo BRAHMA: tenis urbanos y gorra bordada" fetchPriority="high" />
-              <div className="lp-hero__rating-card">
-                <span className="lp-stars">★★★★★</span>
-                <small>4.9 · 2.480 reseñas</small>
+            {/* Info (right) */}
+            <div className="lp-pdp__info lp-reveal" data-delay="1">
+              <div className="lp-pdp__crumb">
+                <b>COMBO BRAHMA</b> · Monster Edition
               </div>
-              <div className="lp-hero__float-card">
-                <span className="lp-dot" />
-                <div>
-                  <b>Pago al recibir</b>
-                  <small>Cero riesgo · Cero fraude</small>
+              <h1 className="lp-pdp__title">
+                Combo Brahma <em>Monster</em>
+              </h1>
+              <p className="lp-pdp__subtitle">
+                Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
+              </p>
+
+              <div className="lp-pdp__rating">
+                <span className="lp-pdp__stars">★★★★★</span>
+                <span className="lp-pdp__rating-num">4.9</span>
+                <span className="lp-pdp__rating-count">(2.480 reseñas)</span>
+                <span className="lp-pdp__rating-verified"><Icon name="check" /> Verificadas</span>
+              </div>
+
+              <div className="lp-pdp__price">
+                <span className="lp-pdp__price-now">{formatCOP(PRICE_NOW)}</span>
+                <span className="lp-pdp__price-old">{formatCOP(PRICE_OLD)}</span>
+                <span className="lp-pdp__price-save">-45% hoy</span>
+              </div>
+              <p className="lp-pdp__tax">Incluye envío gratis · <b>Pago contra entrega</b> · Impuestos incluidos</p>
+
+              {/* Color selector */}
+              <div className="lp-variant">
+                <div className="lp-variant__label">
+                  <b>Color</b>
+                  <span>{colorway.label}</span>
+                </div>
+                <div className="lp-pdp__colors">
+                  {COLORWAYS.map((c) => (
+                    <button key={c.id} className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
+                      aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
+                      <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Talla selector */}
+              <div className="lp-variant">
+                <div className="lp-variant__label">
+                  <b>Talla</b>
+                  <span className="lp-talla-guide">Guía de tallas</span>
+                </div>
+                <div className="lp-tallas">
+                  {TALLAS.map((t) => (
+                    <button key={t} className={`lp-talla ${tall === t ? "is-active" : ""}`}
+                      onClick={() => setTall(t)}>{t}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Stock bar */}
+              <div className="lp-pdp__stock">
+                <div className="lp-pdp__stock-row">
+                  <span>🔥 En oferta · Stock limitado</span>
+                  <b>Quedan 37</b>
+                </div>
+                <div className="lp-pdp__stock-bar"><div className="lp-pdp__stock-fill" style={{ width: "0%" }} /></div>
+              </div>
+
+              {/* CTA */}
+              <div className="lp-pdp__cta">
+                <div className="lp-pdp__cta-row">
+                  <div className="lp-pdp__qty">
+                    <button type="button" onClick={decQty} aria-label="Restar"><Icon name="minus" style={{ width: 16, height: 16 }} /></button>
+                    <input type="text" readOnly value={qty} aria-label="Cantidad" />
+                    <button type="button" onClick={incQty} aria-label="Sumar"><Icon name="plus" style={{ width: 16, height: 16 }} /></button>
+                  </div>
+                  <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg" data-magnetic onClick={scrollToForm}>
+                    <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir ahora · {formatCOP(total)}
+                  </a>
+                </div>
+                <a href="#formulario" className="lp-btn lp-btn--ghost lp-btn--block" onClick={scrollToForm}>
+                  <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Comprar por WhatsApp
+                </a>
+              </div>
+
+              {/* Trust mini */}
+              <div className="lp-pdp__trust">
+                <div className="lp-pdp__trust-item">
+                  <Icon name="cash" />
+                  <b>Pago entrega</b>
+                  <small>Pagas al recibir</small>
+                </div>
+                <div className="lp-pdp__trust-item">
+                  <Icon name="truck" />
+                  <b>Envío gratis</b>
+                  <small>A toda Colombia</small>
+                </div>
+                <div className="lp-pdp__trust-item">
+                  <Icon name="shield" />
+                  <b>Garantía 30d</b>
+                  <small>Devolución total</small>
                 </div>
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="lp-scroll-indicator" aria-hidden="true">
-            <span>Scroll</span>
-            <span className="lp-scroll-indicator__mouse" />
+        {/* ============ 3 PASOS ============ */}
+        <section className="lp-section lp-section--paper lp-section--tight">
+          <div className="lp-container">
+            <div className="lp-section-head lp-section-head--center lp-reveal">
+              <span className="lp-eyebrow">Así de fácil</span>
+              <h2>Tener tu Brahma Monster</h2>
+              <p>No necesitas complicarte. Solo elige, confirma y disfruta.</p>
+            </div>
+            <div className="lp-steps">
+              {STEPS.map((s, i) => (
+                <div key={s.num} className="lp-step lp-reveal" data-delay={i + 1}>
+                  <div className="lp-step__num">{s.num}</div>
+                  <h3>{s.title}</h3>
+                  <p>{s.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ============ MARQUEE ============ */}
-        <div className="lp-marquee" aria-hidden="true">
-          <div className="lp-marquee__track">
-            {Array.from({ length: 2 }).map((_, k) => (
-              <span key={k} style={{ display: "inline-flex", gap: "56px" }}>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Bogotá</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Medellín</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Cali</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Barranquilla</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Cartagena</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Bucaramanga</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Pereira</span>
-                <span className="lp-marquee__item"><span className="lp-star">★</span> Manizales</span>
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* ============ 3. BENEFICIOS ============ */}
+        {/* ============ BENEFICIOS ============ */}
         <section className="lp-section" id="beneficios">
           <div className="lp-container">
             <div className="lp-section-head lp-section-head--center lp-reveal">
-              <span className="lp-eyebrow">Por qué BRAHMA</span>
-              <h2>Diseñado para sentirse tan bien como se ve</h2>
-              <p>Cada detalle del combo está pensado para que no tengas que elegir entre estilo, comodidad y confianza.</p>
+              <span className="lp-eyebrow">Por qué elegirlo</span>
+              <h2>Diseñado para el hombre que no se detiene</h2>
+              <p>Este calzado casual combina resistencia, confort y un diseño moderno ideal para cualquier ocasión.</p>
             </div>
             <div className="lp-benefits">
               {BENEFITS.map((b, i) => (
@@ -689,212 +616,60 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ============ 2. VIDEO CINEMÁTICO ============ */}
-        <section className="lp-section lp-section--paper lp-section--tight">
+        {/* ============ TESTIMONIOS WHATSAPP ============ */}
+        <section className="lp-section lp-section--paper" id="opiniones">
           <div className="lp-container">
             <div className="lp-section-head lp-section-head--center lp-reveal">
-              <span className="lp-eyebrow">En movimiento</span>
-              <h2>Míralo en detalle</h2>
-              <p>Cada textura, cada costura, cada ángulo. Así se ve el combo en la vida real.</p>
+              <span className="lp-eyebrow">Mensajes reales</span>
+              <h2>Lo que dicen nuestros clientes</h2>
+              <p>Conversaciones reales de WhatsApp de clientes que ya tienen su combo. Sin filtros, sin guion.</p>
             </div>
-            <div
-              className="lp-cinema lp-reveal lp-reveal--scale"
-              onClick={() => openLightbox(cinemaIdxRef.current)}
-              role="button"
-              aria-label="Reproducir video del producto"
-            >
-              {GALLERY.map((g, i) => (
-                <div key={i} className={`lp-cinema__slide ${i === 0 ? "is-active" : ""}`}>
-                  <img src={g.src} alt={g.alt} loading="lazy" />
-                </div>
-              ))}
-              <div className="lp-cinema__overlay">
-                <div className="lp-cinema__play"><Icon name="play" /></div>
-                <div>
-                  <div className="lp-cinema__label">Ver en pantalla completa</div>
-                  <div className="lp-cinema__sub">Experiencia cinemática · 5 tomas</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* ============ 4. GALERÍA ============ */}
-        <section className="lp-section" id="galeria">
-          <div className="lp-container">
-            <div className="lp-section-head lp-reveal">
-              <span className="lp-eyebrow">Galería</span>
-              <h2>Cinco colorways. Una sola promesa de calidad.</h2>
-              <p>Explora cada ángulo. Haz clic para ampliar y ver los detalles de cerca.</p>
-            </div>
-            <div className="lp-gallery lp-reveal">
-              <div className="lp-gallery__stage" onClick={() => openLightbox(galleryIdx)}>
-                <img ref={galleryStageRef} src={GALLERY[galleryIdx].src} alt={GALLERY[galleryIdx].alt} />
-                <span className="lp-gallery__zoom-hint"><Icon name="zoom" /> Ampliar</span>
-                <span className="lp-gallery__counter">{galleryIdx + 1} / {GALLERY.length}</span>
-                <button className="lp-gallery__nav lp-gallery__nav--prev" aria-label="Anterior" onClick={(e) => { e.stopPropagation(); goGallery(-1); }}><Icon name="chevL" /></button>
-                <button className="lp-gallery__nav lp-gallery__nav--next" aria-label="Siguiente" onClick={(e) => { e.stopPropagation(); goGallery(1); }}><Icon name="chevR" /></button>
-              </div>
-              <div className="lp-thumbs">
-                {GALLERY.map((g, i) => (
-                  <button key={i} className={`lp-thumb ${i === galleryIdx ? "is-active" : ""}`} aria-label={`Vista ${i + 1}`} onClick={() => setGalleryIdx(i)}>
-                    <img src={g.src} alt="" loading="lazy" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ 5. QUÉ INCLUYE ============ */}
-        <section className="lp-section lp-section--paper">
-          <div className="lp-container">
-            <div className="lp-includes">
-              <div className="lp-includes__visual lp-reveal lp-reveal--left">
-                <img src={colorway.img} alt="Combo BRAHMA completo" loading="lazy" />
-                <span className="lp-includes__badge"><Icon name="sparkle" style={{ width: 14, height: 14 }} /> Combo completo</span>
-              </div>
-              <div className="lp-includes__list lp-reveal lp-reveal--right">
-                <div className="lp-section-head" style={{ marginBottom: 28 }}>
-                  <span className="lp-eyebrow">Qué incluye</span>
-                  <h2>Todo lo que llega a tu puerta</h2>
-                  <p>Un solo pedido. Dos piezas premium. Cero sorpresas.</p>
-                </div>
-                <div className="lp-include">
-                  <span className="lp-include__check"><Icon name="check" /></span>
-                  <div>
-                    <b>1 Par de Tenis Urbanos BRAHMA</b>
-                    <p>Material premium, suela antideslizante y plantilla acolchada. Talla del 36 al 43.</p>
-                  </div>
-                  <span className="lp-include__val">$94.000</span>
-                </div>
-                <div className="lp-include">
-                  <span className="lp-include__check"><Icon name="check" /></span>
-                  <div>
-                    <b>1 Gorra Premium Bordada</b>
-                    <p>Bordado 3D, visera curva pre-moldeada y cierre ajustable. Color a juego.</p>
-                  </div>
-                  <span className="lp-include__val">$45.000</span>
-                </div>
-                <div className="lp-include">
-                  <span className="lp-include__check"><Icon name="check" /></span>
-                  <div>
-                    <b>Envío Gratis a todo Colombia</b>
-                    <p>Despacho en 24h, entrega en 2 a 4 días hábiles con seguimiento.</p>
-                  </div>
-                  <span className="lp-include__val">$0</span>
-                </div>
-                <div className="lp-include">
-                  <span className="lp-include__check"><Icon name="check" /></span>
-                  <div>
-                    <b>Garantía de 30 días</b>
-                    <p>Devolución sin preguntas si no te convence. Tu riesgo es cero.</p>
-                  </div>
-                  <span className="lp-include__val">Incluido</span>
-                </div>
-                <div style={{ marginTop: 24 }}>
-                  <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block" data-magnetic>
-                    <Icon name="bolt" style={{ width: 18, height: 18 }} /> Llevar combo por {formatCOP(PRICE_NOW)}
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ 6. LIFESTYLE ============ */}
-        <section className="lp-section">
-          <div className="lp-container">
-            <div className="lp-section-head lp-reveal">
-              <span className="lp-eyebrow">Lifestyle</span>
-              <h2>Hecho para tu día a día</h2>
-              <p>No es un par de tenis para ocasiones especiales. Es tu compañero de todos los días.</p>
-            </div>
-            <div className="lp-life">
-              {LIFE_TILES.map((t, i) => (
-                <figure key={i} className={`lp-life__tile lp-life__tile--${t.cls} lp-reveal`} data-delay={(i % 2) + 1}>
-                  <img src={t.src} alt={t.cap} loading="lazy" />
-                  <figcaption className="lp-life__cap"><small>{t.sub}</small>{t.cap}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ============ 7. COMPARATIVA ============ */}
-        <section className="lp-section lp-section--paper" id="comparativa">
-          <div className="lp-container">
-            <div className="lp-section-head lp-section-head--center lp-reveal">
-              <span className="lp-eyebrow">La diferencia</span>
-              <h2>BRAHMA vs. lo demás</h2>
-              <p>Compara antes de decidir. La diferencia habla por sí sola.</p>
-            </div>
-            <div className="lp-compare">
-              <div className="lp-compare__col lp-compare__col--us lp-reveal lp-reveal--left">
-                <span className="lp-compare__tag"><Icon name="sparkle" style={{ width: 12, height: 12 }} /> BRAHMA</span>
-                <h3>La experiencia completa</h3>
-                <ul className="lp-compare__list">
-                  {COMPARE_US.map((c) => (
-                    <li key={c} className="lp-compare__row"><Icon name="check" /> <span>{c}</span></li>
-                  ))}
-                </ul>
-              </div>
-              <div className="lp-compare__col lp-compare__col--them lp-reveal lp-reveal--right" data-delay="1">
-                <span className="lp-compare__tag">Otras marcas</span>
-                <h3>Lo de siempre</h3>
-                <ul className="lp-compare__list">
-                  {COMPARE_THEM.map((c) => (
-                    <li key={c} className="lp-compare__row"><Icon name="x" /> <span>{c}</span></li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============ 8. TESTIMONIOS ============ */}
-        <section className="lp-section" id="opiniones">
-          <div className="lp-container">
-            <div className="lp-section-head lp-reveal">
-              <span className="lp-eyebrow">Opiniones reales</span>
-              <h2>Miles de colombianos ya lo viven</h2>
-              <p>Reseñas verificadas de clientes que pagaron contra entrega y volverían a comprar.</p>
-            </div>
+            {/* Stats */}
             <div className="lp-stats lp-reveal" style={{ marginBottom: 48 }}>
               <div><div className="lp-stat__num"><span data-count="12480" data-suffix="+">0</span></div><div className="lp-stat__label">Clientes felices</div></div>
               <div><div className="lp-stat__num"><span data-count="4.9" data-suffix="/5">0</span></div><div className="lp-stat__label">Valoración media</div></div>
               <div><div className="lp-stat__num"><span data-count="98" data-suffix="%">0</span></div><div className="lp-stat__label">Recomendaría</div></div>
               <div><div className="lp-stat__num"><span data-count="24" data-suffix="h">0</span></div><div className="lp-stat__label">Despacho</div></div>
             </div>
-            <div className="lp-testi-rail lp-reveal">
-              {TESTIMONIALS.map((t) => (
-                <article key={t.name} className="lp-testi">
-                  <span className="lp-testi__verified"><Icon name="check" /> Compra verificada</span>
-                  <div className="lp-testi__stars">{"★".repeat(t.stars)}{"☆".repeat(5 - t.stars)}</div>
-                  <p className="lp-testi__quote">“{t.quote}”</p>
-                  <div className="lp-testi__author">
-                    <span className="lp-testi__avatar" style={{ background: t.color }}>{t.initials}</span>
+
+            <div className="lp-wa-testis">
+              {WA_TESTIMONIALS.map((t, i) => (
+                <article key={t.name} className="lp-wa lp-reveal" data-delay={(i % 3) + 1}>
+                  <div className="lp-wa__header">
+                    <div className="lp-wa__avatar">{t.initials}</div>
                     <div>
-                      <div className="lp-testi__name">{t.name}</div>
-                      <div className="lp-testi__meta"><Icon name="location" /> {t.city}</div>
+                      <div className="lp-wa__name">{t.name}</div>
+                      <div className="lp-wa__status">en línea · {t.city}</div>
                     </div>
+                    <Icon name="whatsapp" style={{ width: 20, height: 20, marginLeft: "auto", opacity: 0.8 }} />
                   </div>
+                  <div className="lp-wa__body">
+                    <div className="lp-wa__photo">
+                      <img src={t.photo} alt={`Mensaje de WhatsApp de ${t.name}`} loading="lazy" />
+                      <span className="lp-wa__photo-caption">{t.photoCaption}</span>
+                    </div>
+                    <div className="lp-wa__bubble">{t.message}</div>
+                    <div className="lp-wa__time">{t.time} <Icon name="checkDouble" /></div>
+                  </div>
+                  <div className="lp-wa__stars">{"★".repeat(t.stars)}{"☆".repeat(5 - t.stars)}</div>
+                  <div className="lp-wa__verified"><Icon name="check" /> Compra verificada · {t.city}</div>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ============ 9. OFERTA ============ */}
-        <section className="lp-section lp-section--paper" id="oferta">
+        {/* ============ OFERTA ============ */}
+        <section className="lp-section lp-section--ink" id="oferta">
           <div className="lp-container">
             <div className="lp-offer lp-reveal lp-reveal--scale">
               <div className="lp-offer__bg" />
               <div className="lp-offer__inner">
                 <div>
                   <span className="lp-eyebrow" style={{ color: "var(--lp-amber)" }}>Oferta de lanzamiento</span>
-                  <h2>El precio sube cuando el reloj llegue a cero</h2>
-                  <p className="lp-offer__sub">Precio de introducción por tiempo limitado. Una vez terminado, regresa a su valor normal de {formatCOP(PRICE_OLD)}.</p>
+                  <h2>Llévate tu Combo Brahma Monster hoy</h2>
+                  <p className="lp-offer__sub">Incluye gorra BRAHMA en drill bordada de regalo · Pago contra entrega · Envío a toda Colombia. El precio sube cuando el reloj llegue a cero.</p>
 
                   <div className="lp-countdown" role="timer" aria-label="Cuenta regresiva">
                     {[
@@ -909,32 +684,25 @@ export default function Home() {
                     ))}
                   </div>
 
-                  <div className="lp-stock">
-                    <div className="lp-stock__head">
-                      <span>Stock disponible</span>
-                      <b>Quedan <span data-stock>37</span> unidades</b>
-                    </div>
-                    <div className="lp-stock__bar"><div className="lp-stock__fill" style={{ width: "0%" }} /></div>
-                  </div>
-
                   <div className="lp-offer__price">
                     <span className="lp-price__old">{formatCOP(PRICE_OLD)}</span>
                     <span className="lp-price__now">{formatCOP(PRICE_NOW)}</span>
                     <span className="lp-price__save">-45% hoy</span>
                   </div>
 
-                  <a href="#formulario" className="lp-btn lp-btn--light lp-btn--lg lp-btn--block" data-magnetic>
-                    <Icon name="bolt" style={{ width: 18, height: 18 }} /> Reservar mi combo ahora
+                  <a href="#formulario" className="lp-btn lp-btn--light lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
+                    <Icon name="bolt" style={{ width: 18, height: 18 }} /> QUIERO MI COMBO →
                   </a>
+                  <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 16, flexWrap: "wrap", fontSize: "0.8rem", color: "var(--lp-stone-2)" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> Pago contraentrega</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> Envío nacional</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> 🎁 Gorra gratis</span>
+                  </div>
                 </div>
                 <div className="lp-offer__visual">
                   <img src={colorway.img} alt="Combo BRAHMA en oferta" loading="lazy" />
                   <div className="lp-offer__seal">
-                    <div>
-                      AHORRA<br />
-                      <small>45%</small>
-                      HOY
-                    </div>
+                    <div>AHORRA<br /><small>45%</small>HOY</div>
                   </div>
                 </div>
               </div>
@@ -942,15 +710,15 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ============ 10. GARANTÍA ============ */}
+        {/* ============ GARANTÍA ============ */}
         <section className="lp-section">
           <div className="lp-container">
             <div className="lp-guarantee lp-reveal">
               <div className="lp-guarantee__seal"><Icon name="shield" /></div>
               <div>
-                <span className="lp-eyebrow">Riesgo cero</span>
-                <h3>Garantía de satisfacción de 30 días</h3>
-                <p>Pides, recibes, examinas. Si por cualquier razón el combo no cumple tus expectativas, te devolvemos el 100% de tu dinero. Sin letra pequeña, sin interrogatorios. Así de simple.</p>
+                <span className="lp-eyebrow">Nuestra promesa</span>
+                <h3>Compra 100% segura y verificada</h3>
+                <p>Pides, recibes, examinas. Si por cualquier razón el combo no cumple tus expectativas, te devolvemos el 100% de tu dinero. Sin letra pequeña, sin interrogatorios.</p>
                 <div className="lp-guarantee__points">
                   <span><Icon name="check" /> Devolución total</span>
                   <span><Icon name="check" /> Sin preguntas</span>
@@ -962,13 +730,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ============ 11. FAQ ============ */}
+        {/* ============ FAQ ============ */}
         <section className="lp-section lp-section--paper" id="faq">
           <div className="lp-container">
             <div className="lp-section-head lp-section-head--center lp-reveal">
               <span className="lp-eyebrow">Preguntas frecuentes</span>
-              <h2>Resolvemos tus dudas</h2>
-              <p>Y si queda alguna, escríbenos por WhatsApp. Respondemos en minutos.</p>
+              <h2>Todo lo que necesitas saber antes de comprar</h2>
+              <p>Y si queda alguna duda, escríbenos por WhatsApp. Respondemos en minutos.</p>
             </div>
             <div className="lp-faq lp-reveal">
               {FAQS.map((f, i) => (
@@ -977,7 +745,7 @@ export default function Home() {
                     <span>{f.q}</span>
                     <span className="lp-faq__icon" aria-hidden="true" />
                   </button>
-                  <div className="lp-faq__a" style={{ maxHeight: faqOpen === i ? 320 : 0 }}>
+                  <div className="lp-faq__a" style={{ maxHeight: faqOpen === i ? 360 : 0 }}>
                     <div className="lp-faq__a-inner">{f.a}</div>
                   </div>
                 </div>
@@ -986,7 +754,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ============ 12. FORMULARIO ============ */}
+        {/* ============ FORMULARIO ============ */}
         <section className="lp-section" id="formulario">
           <div className="lp-container">
             <div className="lp-form-wrap">
@@ -1001,7 +769,8 @@ export default function Home() {
                   <li><Icon name="whatsapp" /> Confirmación por WhatsApp</li>
                 </ul>
                 <div className="lp-form-summary__price">
-                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label})</span><span>{formatCOP(PRICE_NOW)}</span></div>
+                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label}, Talla {tall})</span><span>{formatCOP(PRICE_NOW)}</span></div>
+                  <div className="lp-row"><span>Gorra bordada de regalo</span><span>$0</span></div>
                   <div className="lp-row"><span>Envío</span><span>Gratis</span></div>
                   <div className="lp-row"><span>Cantidad</span><span>{qty}</span></div>
                   <div className="lp-row lp-row--total"><span>Total a pagar</span><span>{formatCOP(total)}</span></div>
@@ -1044,36 +813,14 @@ export default function Home() {
                 </div>
 
                 <div className="lp-field">
-                  <label>Talla de tenis</label>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    {["36","37","38","39","40","41","42","43"].map((t) => (
-                      <button type="button" key={t} onClick={() => setTall(t)}
-                        className={`lp-btn ${tall === t ? "lp-btn--primary" : "lp-btn--ghost"}`}
-                        style={{ padding: "10px 16px", fontSize: "0.85rem", borderRadius: 10 }}>
-                        {t}
+                  <label>Color: <b style={{ color: "var(--lp-amber-deep)" }}>{colorway.label}</b> · Talla: <b style={{ color: "var(--lp-amber-deep)" }}>{tall}</b> · Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{qty}</b></label>
+                  <div className="lp-pdp__colors" style={{ gap: 8 }}>
+                    {COLORWAYS.map((c) => (
+                      <button key={c.id} type="button" className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
+                        style={{ width: 40, height: 40, padding: 3 }} aria-label={c.label} onClick={() => selectColorway(c)}>
+                        <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                <div className="lp-field">
-                  <label>Color seleccionado</label>
-                  <div className="lp-colorways">
-                    {COLORWAYS.map((c) => (
-                      <button key={c.id} type="button"
-                        className={`lp-swatch lp-swatch--${c.swatch} ${colorway.id === c.id ? "is-active" : ""}`}
-                        aria-label={c.label} onClick={() => selectColorway(c)} />
-                    ))}
-                    <span style={{ fontSize: "0.875rem", color: "var(--lp-stone)", alignSelf: "center", marginLeft: 6 }}>{colorway.label}</span>
-                  </div>
-                </div>
-
-                <div className="lp-field">
-                  <label>Cantidad</label>
-                  <div className="lp-qty">
-                    <button type="button" onClick={decQty} aria-label="Restar"><Icon name="minus" style={{ width: 16, height: 16 }} /></button>
-                    <input type="text" readOnly value={qty} aria-label="Cantidad" />
-                    <button type="button" onClick={incQty} aria-label="Sumar"><Icon name="plus" style={{ width: 16, height: 16 }} /></button>
                   </div>
                 </div>
 
@@ -1096,7 +843,7 @@ export default function Home() {
         </section>
       </main>
 
-      {/* ============ 13. FOOTER ============ */}
+      {/* ============ FOOTER ============ */}
       <footer className="lp-footer">
         <div className="lp-container">
           <div className="lp-footer__top">
@@ -1107,27 +854,25 @@ export default function Home() {
             <div className="lp-footer__col">
               <h4>Producto</h4>
               <a href="#beneficios">Beneficios</a>
-              <a href="#galeria">Galería</a>
-              <a href="#comparativa">Comparativa</a>
+              <a href="#opiniones">Opiniones</a>
               <a href="#faq">Preguntas</a>
+              <a href="#oferta">Oferta</a>
             </div>
             <div className="lp-footer__col">
               <h4>Compra</h4>
               <a href="#formulario">Hacer pedido</a>
-              <a href="#oferta">Oferta actual</a>
-              <a href="#opiniones">Opiniones</a>
+              <a href="#formulario">Pago contra entrega</a>
               <a href="#" onClick={(e) => { e.preventDefault(); showToast("Escríbenos al 300 000 0000", "info"); }}>WhatsApp</a>
             </div>
             <div className="lp-footer__col">
               <h4>Confianza</h4>
               <a href="#" onClick={(e) => { e.preventDefault(); showToast("Garantía de 30 días activa", "info"); }}>Garantía 30 días</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Pago Contra Entrega disponible", "info"); }}>Pago Contra Entrega</a>
               <a href="#" onClick={(e) => { e.preventDefault(); showToast("Envío gratis a todo Colombia", "info"); }}>Envío gratis</a>
               <a href="#" onClick={(e) => { e.preventDefault(); showToast("Términos disponibles bajo solicitud", "info"); }}>Términos</a>
             </div>
           </div>
           <div className="lp-footer__bottom">
-            <span>© {new Date().getFullYear()} BRAHMA. Hecho en Colombia.</span>
+            <span>© {new Date().getFullYear()} BRAHMA Monster · Hecho en Colombia.</span>
             <div className="lp-footer__pay">
               <span>CONTRA ENTREGA</span>
               <span>EFECTIVO</span>
@@ -1143,7 +888,7 @@ export default function Home() {
           <div className="lp-sticky-cta__price">{formatCOP(PRICE_NOW)} <small>{formatCOP(PRICE_OLD)}</small></div>
           <div className="lp-sticky-cta__sub">Pago al recibir · Envío gratis</div>
         </div>
-        <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic>
+        <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic onClick={scrollToForm}>
           <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar
         </a>
       </div>
@@ -1154,17 +899,9 @@ export default function Home() {
           {formatCOP(PRICE_NOW)}
           <small>{formatCOP(PRICE_OLD)}</small>
         </div>
-        <a href="#formulario" className="lp-btn lp-btn--light" data-magnetic>
+        <a href="#formulario" className="lp-btn lp-btn--light" data-magnetic onClick={scrollToForm}>
           <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar ahora
         </a>
-      </div>
-
-      {/* ============ LIGHTBOX ============ */}
-      <div className={`lp-lightbox ${lightboxOpen ? "is-open" : ""}`} onClick={closeLightbox}>
-        <button className="lp-lightbox__close" aria-label="Cerrar" onClick={closeLightbox}><Icon name="x" /></button>
-        <img className="lp-lightbox__img" src={GALLERY[lightboxIdx].src} alt={GALLERY[lightboxIdx].alt} onClick={(e) => e.stopPropagation()} />
-        <button className="lp-lightbox__nav lp-lightbox__nav--prev" aria-label="Anterior" onClick={(e) => { e.stopPropagation(); goLightbox(-1); }}><Icon name="chevL" /></button>
-        <button className="lp-lightbox__nav lp-lightbox__nav--next" aria-label="Siguiente" onClick={(e) => { e.stopPropagation(); goLightbox(1); }}><Icon name="chevR" /></button>
       </div>
 
       {/* ============ TOAST ============ */}

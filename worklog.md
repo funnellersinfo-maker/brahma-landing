@@ -47,3 +47,43 @@ Work Log:
 Stage Summary:
 - Bug de contraste resuelto. Todos los CTAs (header, hero, qué incluye, oferta, sticky móvil, buy-bar desktop, menú móvil) ahora muestran su texto correctamente.
 - El problema afectaba solo a los <a> con clase lp-btn--primary/ghost/light; los <button> (como el submit del form) no se veían afectados porque la regla `.lp-root a` no les aplica.
+
+---
+Task ID: 3
+Agent: orchestrator (main)
+Task: Rediseñar landing con hero estilo Shopify PDP + selector de color que cambia imagen + 3 testimonios WhatsApp reales + orden de alta conversión tipo páginas americanas.
+
+Work Log:
+- Scraping de https://clicmarketstore.com/products/combo-brahma-moster con web-reader (page_reader). Extracción de: estructura de secciones, copy de beneficios, 4 testimonios, 6 FAQs, psicología de conversión (3 pasos, urgencia, contraentrega, gorra gratis).
+- Análisis de 3 capturas de WhatsApp reales (Juliana P. Bogotá, Nicolás R. Medellín, Mauricio V. Cali) con mensajes auténticos de clientes BRAHMA. Copia de las 3 imágenes a public/images/wa-*.png.
+- Añadido ~480 líneas de CSS nuevo en landing.css (sección v2):
+  - Hero PDP: grid 2 columnas (galería izq + info der), stage cuadrado con badge descuento, "X personas viendo", thumbnails, color buttons circulares 56px con estado activo, selector de talla, stock bar, qty selector, trust mini badges.
+  - 3 Pasos "Así de fácil": grid 3 columnas con línea punteada conectora, números circulares.
+  - Testimonios WhatsApp: cards con header verde #075e54, avatar con iniciales, foto del producto, bubble de chat blanco, timestamp con check azul doble, estrellas, badge "Compra verificada".
+  - Urgency strip: barra negra con dot pulsante + oferta/contraentrega/gorra.
+  - Responsive: móvil single-column, swatches más pequeños, CTA full-width.
+- Reescrito page.tsx completamente con nuevo orden CRO:
+  1. Urgency strip (negro, oferta termina hoy)
+  2. Hero PDP (imagen izq + info der con color/talla/stock/qty/CTA)
+  3. 3 Pasos (Elige → Confirma → Disfruta)
+  4. Beneficios (6 cards)
+  5. Testimonios WhatsApp (3 cards con Juliana/Nicolás/Mauricio + stats)
+  6. Oferta (countdown + precio anclado + CTA + checkmarks)
+  7. Garantía (Compra 100% segura)
+  8. FAQ (8 preguntas)
+  9. Formulario (con resumen de pedido dinámico)
+- Funcionalidad JS: selector de color cambia imagen del stage + actualiza nombre del color visible + sincroniza con formulario; selector de talla con estado activo; qty selector; countdown; stock bar animada on-view; scroll reveal; ripple; magnetic hover; cursor custom.
+- Verificación E2E con Agent Browser:
+  - Desktop 1440px: hero PDP renderiza con imagen izq, 5 swatches con estado activo, nombre color "Arena" visible, 8 tallas con 40 seleccionada, precio $119.900/$219.000/-45%, CTA "Pedir ahora" legible. Click en cada color (Café/Negro/Azul) cambia la imagen instantáneamente. ✅
+  - Testimonios WhatsApp: 3 cards con header verde, fotos reales, mensajes auténticos, nombres y ciudades. ✅
+  - Formulario: llenado + submit → POST /api/order 200 → pedido guardado en BD (María González, Cali, blue, 40, 119900) → toast de éxito. ✅
+  - Móvil 390px: hero single-column, swatches y tallas visibles y tappables, CTA full-width, sticky CTA móvil funcional. ✅
+- Lint: 0 errores, 0 warnings. Dev.log limpio (solo Fast Refresh/HMR, sin errores).
+
+Stage Summary:
+- Landing rediseñada al estilo PDP Shopify de alta conversión (clicmarketstore + páginas americanas).
+- Selector de color prominente (5 círculos grandes) que cambia la imagen del producto al instante, con nombre del color visible.
+- 3 testimonios grandes estilo WhatsApp con fotos reales del producto y mensajes auténticos (Juliana/Nicolás/Mauricio) — prueba social maximizada.
+- Orden claro: Urgencia → Hero PDP → 3 Pasos → Beneficios → Testimonios WA → Oferta → Garantía → FAQ → Form.
+- Psicología aplicada: anchoring (precio tachado), escasez (stock 37 + bar), urgencia (countdown + strip), prueba social (3 WA + stats), reversión de riesgo (garantía), compromiso (3 pasos), eliminación de objeciones (8 FAQs).
+- Funcional: pedidos contra entrega se guardan en BD vía /api/order.
