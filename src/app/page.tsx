@@ -23,9 +23,9 @@ const COLORWAYS: Colorway[] = [
   { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black", hex: "#1a1a1c" },
 ];
 
-const PRICE_OLD = 169900;
+const PRICE_OLD = 179900;
 const PRICE_NOW = 149900;
-const SAVED = PRICE_OLD - PRICE_NOW; // $20.000
+const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
 const TALLAS = ["35", "36", "37", "38", "39", "40", "41", "42", "43"];
 
 const BENEFITS = [
