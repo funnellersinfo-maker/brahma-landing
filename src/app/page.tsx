@@ -23,8 +23,9 @@ const COLORWAYS: Colorway[] = [
   { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black", hex: "#1a1a1c" },
 ];
 
-const PRICE_OLD = 219000;
-const PRICE_NOW = 119900;
+const PRICE_OLD = 159900;
+const PRICE_NOW = 129900;
+const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
 const TALLAS = ["36", "37", "38", "39", "40", "41", "42", "43"];
 
 const BENEFITS = [
@@ -456,7 +457,7 @@ export default function Home() {
               <div className="lp-pdp__stage">
                 <img src={colorway.img} alt={`Combo BRAHMA color ${colorway.label}`} fetchPriority="high" />
                 <div className="lp-pdp__badge-discount">
-                  <small>Ahorra</small> 45% HOY
+                  <small>Ahorra</small> {formatCOP(SAVED)} HOY
                 </div>
                 <div className="lp-pdp__views">
                   <span className="lp-dot" /> 38 personas viendo esto
@@ -494,7 +495,7 @@ export default function Home() {
               <div className="lp-pdp__price">
                 <span className="lp-pdp__price-now">{formatCOP(PRICE_NOW)}</span>
                 <span className="lp-pdp__price-old">{formatCOP(PRICE_OLD)}</span>
-                <span className="lp-pdp__price-save">-45% hoy</span>
+                <span className="lp-pdp__price-save">Ahorras {formatCOP(SAVED)}</span>
               </div>
               <p className="lp-pdp__tax">Incluye envío gratis · <b>Pago contra entrega</b> · Impuestos incluidos</p>
 
@@ -687,7 +688,7 @@ export default function Home() {
                   <div className="lp-offer__price">
                     <span className="lp-price__old">{formatCOP(PRICE_OLD)}</span>
                     <span className="lp-price__now">{formatCOP(PRICE_NOW)}</span>
-                    <span className="lp-price__save">-45% hoy</span>
+                    <span className="lp-price__save">Ahorras {formatCOP(SAVED)}</span>
                   </div>
 
                   <a href="#formulario" className="lp-btn lp-btn--light lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
@@ -702,7 +703,7 @@ export default function Home() {
                 <div className="lp-offer__visual">
                   <img src={colorway.img} alt="Combo BRAHMA en oferta" loading="lazy" />
                   <div className="lp-offer__seal">
-                    <div>AHORRA<br /><small>45%</small>HOY</div>
+                    <div>AHORRA<br /><small>{formatCOP(SAVED)}</small>HOY</div>
                   </div>
                 </div>
               </div>
