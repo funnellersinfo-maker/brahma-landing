@@ -316,6 +316,22 @@ export default function Home() {
       { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
     );
     reveals.forEach((el) => io.observe(el));
+    // Check inmediato: marca como visibles los reveals que ya están en viewport
+    // (fix para scroll instantáneo que no dispara el observer a tiempo)
+    const checkVisibleNow = () => {
+      const vh = window.innerHeight;
+      reveals.forEach((el) => {
+        if (el.classList.contains("is-visible")) return;
+        const r = el.getBoundingClientRect();
+        if (r.top < vh && r.bottom > 0) {
+          el.classList.add("is-visible");
+          io.unobserve(el);
+        }
+      });
+    };
+    checkVisibleNow();
+    const revealTimer = window.setTimeout(checkVisibleNow, 300);
+    window.addEventListener("scroll", checkVisibleNow, { passive: true });
 
     const counters = root.querySelectorAll<HTMLElement>("[data-count]");
     const ioCount = new IntersectionObserver(
@@ -397,9 +413,11 @@ export default function Home() {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       window.removeEventListener("load", onScroll);
+      window.removeEventListener("scroll", checkVisibleNow);
       root.removeEventListener("click", onClick);
       root.removeEventListener("mousedown", onRipple);
       window.clearTimeout(recalcTimer);
+      window.clearTimeout(revealTimer);
       io.disconnect();
       ioCount.disconnect();
       cursor?.remove();
