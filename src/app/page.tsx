@@ -18,7 +18,7 @@ type Colorway = { id: string; label: string; img: string; swatch: string; hex: s
 const COLORWAYS: Colorway[] = [
   { id: "beige", label: "Arena", img: "/images/combo-beige.jpg", swatch: "beige", hex: "#cdb89a" },
   { id: "brown", label: "Café", img: "/images/combo-brown.jpg", swatch: "brown", hex: "#6b4a2e" },
-  { id: "olive", label: "Oliva", img: "/images/combo-olive.jpg", swatch: "olive", hex: "#5a5a32" },
+  { id: "olive", label: "Verde Militar", img: "/images/combo-olive.jpg", swatch: "olive", hex: "#5a5a32" },
   { id: "blue", label: "Azul Noche", img: "/images/combo-blue.jpg", swatch: "blue", hex: "#3a4a63" },
   { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black", hex: "#1a1a1c" },
 ];
@@ -160,6 +160,7 @@ export default function Home() {
   const [qty, setQty] = useState(1);
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [tall, setTall] = useState("40");
+  const [views, setViews] = useState(82); // personas viendo (rango 79-85)
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -426,6 +427,27 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
+  // Contador "personas viendo" — variación inteligente entre 79 y 85
+  useEffect(() => {
+    let active = true;
+    const tick = () => {
+      if (!active) return;
+      setViews((prev) => {
+        // Variación de -3 a +3, pero sesgada a pequeños cambios (más realista)
+        const delta = Math.floor(Math.random() * 7) - 3; // -3..+3
+        let next = prev + delta;
+        // Mantener dentro del rango 79-85, rebote suave en los extremos
+        if (next < 79) next = 79 + Math.floor(Math.random() * 2);
+        if (next > 85) next = 85 - Math.floor(Math.random() * 2);
+        return next;
+      });
+      // Próximo cambio entre 8 y 16 segundos (calma, no nervioso)
+      window.setTimeout(tick, 8000 + Math.random() * 8000);
+    };
+    const firstTimer = window.setTimeout(tick, 6000 + Math.random() * 5000);
+    return () => { active = false; window.clearTimeout(firstTimer); };
+  }, []);
+
   /* El total usa el precio del tier seleccionado; si el usuario modificó qty
      manualmente (fuera de tiers), usa PRICE_NOW como fallback */
   const total = tier.qty * tier.unitPrice;
@@ -487,6 +509,28 @@ export default function Home() {
           <span><b>OFERTA TERMINA HOY</b> · Pago Contra Entrega · Envío Gratis · 🎁 Gorra bordada incluida</span>
         </div>
 
+        {/* ============ CARRIERS MARQUEE ============ */}
+        <div className="lp-carriers">
+          <div className="lp-carriers__label">
+            <Icon name="truck" style={{ width: 14, height: 14 }} />
+            <span>Despachos todos los días hasta las 6 PM por:</span>
+          </div>
+          <div className="lp-carriers__track">
+            <div className="lp-carriers__group">
+              <img src="/images/carriers/envia.png" alt="Envía" />
+              <img src="/images/carriers/coordinadora.png" alt="Coordinadora" />
+              <img src="/images/carriers/interrapido.png" alt="Inter Rapidísimo" />
+              <img src="/images/carriers/tcc.png" alt="TCC" />
+            </div>
+            <div className="lp-carriers__group" aria-hidden="true">
+              <img src="/images/carriers/envia.png" alt="" />
+              <img src="/images/carriers/coordinadora.png" alt="" />
+              <img src="/images/carriers/interrapido.png" alt="" />
+              <img src="/images/carriers/tcc.png" alt="" />
+            </div>
+          </div>
+        </div>
+
         {/* ============ HERO PDP ============ */}
         <section className="lp-pdp" id="hero">
           <div className="lp-pdp__bg" />
@@ -500,7 +544,7 @@ export default function Home() {
                   <small>Ahorra</small> {formatCOP(SAVED)} HOY
                 </div>
                 <div className="lp-pdp__views">
-                  <span className="lp-dot" /> 38 personas viendo esto
+                  <span className="lp-dot" /> {views} personas viendo esto
                 </div>
               </div>
               <div className="lp-pdp__thumbs">

@@ -149,3 +149,34 @@ Stage Summary:
 - Psicología aplicada: anchoring (precio 1 par ancla), decoy effect (tier 1 sin descuento hace que 2 parezca ganga), loss aversion ("Ahorras $150.000" si NO compras 3), social proof ("Más popular" en tier 2), cerebro reptiliano (copy "Para toda la familia" activa instinto de provisión).
 - El tier 2 (Más popular) es el de conversión esperada; el tier 3 (Mejor valor) maximiza ticket.
 - Pedidos se guardan con el precio correcto según tier seleccionado.
+
+---
+Task ID: 6
+Agent: orchestrator (main)
+Task: Renombrar Oliva→Verde Militar, contador personas viendo 79-85 dinámico, marquee de transportadoras, destacar despachos hasta 6 PM.
+
+Work Log:
+- Colorway "Oliva" renombrado a "Verde Militar" (id olive se mantiene, solo cambia label). Verificado: al seleccionar muestra "Verde Militar" + imagen combo-olive.jpg.
+- Contador "personas viendo" dinámico:
+  - Estado useState(82), rango 79-85.
+  - useEffect con variación inteligente: delta -3..+3 cada 8-16 segundos (calma, no nervioso), rebote suave en extremos.
+  - Verificado: 83 → 81 → 85 a lo largo de 27 segundos, siempre en rango.
+- Marquee de transportadoras:
+  - 4 logos procesados (fondo blanco eliminado con PIL, TCC redimensionado a 120px de alto): Envia, Coordinadora, Inter Rapidísimo, TCC.
+  - Copiados a public/images/carriers/{envia,coordinadora,interrapido,tcc}.png.
+  - Estructura: label fijo izq + track con 2 grupos duplicados para loop infinito, animación CSS 22s desktop / 18s móvil, mask gradient en bordes, pausa on hover.
+  - Posición: entre urgency strip y hero (debajo de barra de oferta, antes de imagen grande).
+  - Destaca "Despachos todos los días hasta las 6 PM por:" con icono truck.
+- CSS nuevo (~70 líneas): .lp-carriers, .lp-carriers__label, .lp-carriers__track (con mask), .lp-carriers__group (animación scroll), hover pause, responsive móvil.
+- Verificación E2E:
+  - Desktop: marquee visible con label + 4 logos scrolleando, logos limpios sin fondo blanco. ✅
+  - Móvil: label legible, logos scrolleando (animación 18s running). ✅
+  - Contador varía 79-85 con calma. ✅
+  - "Verde Militar" en selector + nombre visible al activar. ✅
+- Lint: 0 errores. Dev.log limpio.
+
+Stage Summary:
+- 4 cambios implementados: rename Oliva→Verde Militar, contador dinámico 79-85, marquee transportadoras, destacar despachos hasta 6 PM.
+- Transportadoras (Envia/Coordinadora/Inter Rapidísimo/TCC) refuerzan confianza logística.
+- Contador dinámico aumenta prueba social en tiempo real (escasez social).
+- Mensaje de despachos hasta 6 PM reduce objeción de "¿cuándo me llega?".
