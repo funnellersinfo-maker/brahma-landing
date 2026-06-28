@@ -34,6 +34,10 @@ export const metadata: Metadata = {
   authors: [{ name: "BRAHMA" }],
   robots: { index: true, follow: true },
   alternates: { canonical: "/" },
+  icons: {
+    icon: "/images/logo-brahma.png",
+    apple: "/images/logo-brahma.png",
+  },
   openGraph: {
     title: "COMBO BRAHMA Monster Zapatos + Gorra",
     description:

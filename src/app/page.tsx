@@ -412,8 +412,7 @@ export default function Home() {
       <header className="lp-header">
         <div className="lp-header__inner">
           <a href="#top" className="lp-brand" aria-label="BRAHMA inicio">
-            <span className="lp-brand__mark">B</span>
-            <span>BRAHMA</span>
+            <img src="/images/logo-brahma.png" alt="BRAHMA" className="lp-brand__logo" />
           </a>
           <nav className="lp-nav" aria-label="Principal">
             <a href="#beneficios">Beneficios</a>
@@ -865,7 +864,7 @@ export default function Home() {
         <div className="lp-container">
           <div className="lp-footer__top">
             <div className="lp-footer__brand">
-              <a href="#top" className="lp-brand"><span className="lp-brand__mark">B</span><span>BRAHMA</span></a>
+              <a href="#top" className="lp-brand lp-brand--footer"><img src="/images/logo-brahma.png" alt="BRAHMA" className="lp-brand__logo" /></a>
               <p>Combo urbano premium para Colombia. Pago Contra Entrega, envío gratis y garantía real.</p>
             </div>
             <div className="lp-footer__col">

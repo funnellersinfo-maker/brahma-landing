@@ -366,6 +366,17 @@
   letter-spacing: 0.16em;
   color: var(--lp-ink);
 }
+.lp-brand__logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  transition: opacity var(--lp-dur-fast) var(--lp-ease);
+}
+.lp-brand:hover .lp-brand__logo { opacity: 0.7; }
+.lp-brand--footer .lp-brand__logo {
+  height: 38px;
+  filter: brightness(0) invert(1); /* logo blanco para fondo oscuro del footer */
+}
 .lp-brand__mark {
   width: 30px;
   height: 30px;
