@@ -96,8 +96,8 @@ const FAQS = [
   { q: "¿La gorra realmente es gratis?", a: "Sí, la gorra BRAHMA en drill bordada va incluida sin costo adicional con la compra de tu combo. No es un complemento aparte, viene en la misma caja." },
   { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. Cero pago anticipado, cero riesgo." },
   { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 35 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
-  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, realizamos envíos a nivel nacional a través de transportadoras certificadas (Envía, Coordinadora, Inter Rapidísimo, TCC). El envío es 100% gratis. No hacemos envíos a San Andrés Islas ni a Amazonas." },
-  { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos en 24 horas hábiles. La entrega tarda de 1 a 5 días hábiles según tu ciudad. Bogotá, Medellín y Cali suelen recibir en 1-2 días." },
+  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, despachamos desde Cúcuta a nivel nacional a través de transportadoras certificadas (Envía, Coordinadora, Inter Rapidísimo, TCC). El envío es 100% gratis. No hacemos envíos a San Andrés Islas ni a Amazonas." },
+  { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos desde Cúcuta en 24 horas hábiles. Las entregas llegan en 24 a 48 horas dependiendo de la distancia: Bogotá, Medellín, Cali y Bucaramanga suelen recibir al día siguiente; ciudades más lejanas en 3-5 días hábiles." },
   { q: "¿Qué pasa si la talla no me queda bien?", a: "Tienes derecho a cambio de talla siguiendo nuestra política. Contáctanos apenas recibas tu pedido y lo solucionamos. Tu satisfacción es la única condición." },
   { q: "¿Puedo pagar con tarjeta o transferencia?", a: "El método principal es Contra Entrega en efectivo. Si prefieres tarjeta o transferencia (con descuento adicional), escríbenos por WhatsApp." },
   { q: "¿El combo incluye tenis y gorra?", a: "Sí. El combo incluye un par de tenis urbanos BRAHMA + una gorra premium bordada, en el color que elijas. Todo por el precio promocional." },
@@ -118,6 +118,15 @@ const BUYER_NAMES = [
 ];
 const BUYER_CITIES = CITIES; // ciudades donde sí hay envío (sin San Andrés ni Amazonas)
 const BUYER_COLORS = ["Arena", "Café", "Verde Militar", "Azul Noche", "Negro"];
+
+/* 5 hooks de transformación — psicología neuromarketing, rotan cada 8-10s */
+const HERO_HOOKS = [
+  "El combo que cambia tu presencia en la calle.",
+  "Deja de parecer uno más. Empieza a destacar hoy.",
+  "No son tenis. Es la primera impresión que dejas.",
+  "Quien los usa no pasa desapercibido. Tú decides.",
+  "El detalle que separa al que llama la atención del que se pierde.",
+];
 
 /* ------------------------------------------------------------------ */
 /*  ICONOS SVG                                                         */
@@ -170,7 +179,18 @@ export default function Home() {
   const [qty, setQty] = useState(1);
   const [tier, setTier] = useState<Tier>(TIERS[0]);
   const [tall, setTall] = useState("40");
-  const [views, setViews] = useState(82); // personas viendo (rango 79-85)
+  const [views, setViews] = useState(() => {
+    // Rango inteligente según hora del día (tráfico frío realista)
+    const h = new Date().getHours();
+    if (h >= 0 && h < 6) return 18 + Math.floor(Math.random() * 12);   // Madrugada: 18-29
+    if (h >= 6 && h < 9) return 40 + Math.floor(Math.random() * 20);   // Mañana temprano: 40-59
+    if (h >= 9 && h < 12) return 65 + Math.floor(Math.random() * 20);  // Mañana: 65-84
+    if (h >= 12 && h < 14) return 75 + Math.floor(Math.random() * 16); // Mediodía: 75-90
+    if (h >= 14 && h < 18) return 80 + Math.floor(Math.random() * 21); // Tarde pico: 80-100
+    if (h >= 18 && h < 22) return 70 + Math.floor(Math.random() * 20); // Noche: 70-89
+    return 35 + Math.floor(Math.random() * 18);                         // 22-24: 35-52
+  });
+  const [hookIdx, setHookIdx] = useState(0);
   const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string } | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
@@ -456,21 +476,29 @@ export default function Home() {
     return () => io.disconnect();
   }, []);
 
-  // Contador "personas viendo" — variación inteligente entre 79 y 85
+  // Contador "personas viendo" — variación inteligente según hora del día
   useEffect(() => {
     let active = true;
+    const getRange = () => {
+      const h = new Date().getHours();
+      if (h >= 0 && h < 6) return [18, 29];
+      if (h >= 6 && h < 9) return [40, 59];
+      if (h >= 9 && h < 12) return [65, 84];
+      if (h >= 12 && h < 14) return [75, 90];
+      if (h >= 14 && h < 18) return [80, 100];
+      if (h >= 18 && h < 22) return [70, 89];
+      return [35, 52];
+    };
     const tick = () => {
       if (!active) return;
       setViews((prev) => {
-        // Variación de -3 a +3, pero sesgada a pequeños cambios (más realista)
-        const delta = Math.floor(Math.random() * 7) - 3; // -3..+3
+        const [min, max] = getRange();
+        const delta = Math.floor(Math.random() * 9) - 4; // -4..+4
         let next = prev + delta;
-        // Mantener dentro del rango 79-85, rebote suave en los extremos
-        if (next < 79) next = 79 + Math.floor(Math.random() * 2);
-        if (next > 85) next = 85 - Math.floor(Math.random() * 2);
+        if (next < min) next = min + Math.floor(Math.random() * 3);
+        if (next > max) next = max - Math.floor(Math.random() * 3);
         return next;
       });
-      // Próximo cambio entre 8 y 16 segundos (calma, no nervioso)
       window.setTimeout(tick, 8000 + Math.random() * 8000);
     };
     const firstTimer = window.setTimeout(tick, 6000 + Math.random() * 5000);
@@ -499,6 +527,18 @@ export default function Home() {
       io.observe(v);
     });
     return () => io.disconnect();
+  }, []);
+
+  // Rotación de hooks de transformación cada 8-10s
+  useEffect(() => {
+    let active = true;
+    const tick = () => {
+      if (!active) return;
+      setHookIdx((prev) => (prev + 1) % HERO_HOOKS.length);
+      window.setTimeout(tick, 8000 + Math.random() * 2000);
+    };
+    const firstTimer = window.setTimeout(tick, 8000 + Math.random() * 2000);
+    return () => { active = false; window.clearTimeout(firstTimer); };
   }, []);
 
   // Notificaciones de compra flotantes — prueba social (cada 10-20s aleatorio)
@@ -649,6 +689,9 @@ export default function Home() {
               <h1 className="lp-pdp__title">
                 Combo Brahma <em>Moster</em> Zapatos + Gorra
               </h1>
+              <div className="lp-pdp__hook" key={hookIdx}>
+                {HERO_HOOKS[hookIdx]}
+              </div>
               <p className="lp-pdp__subtitle">
                 Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
               </p>
@@ -1007,6 +1050,56 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ============ BLOQUE FOMO / JUSTIFICACIÓN TEMU ============ */}
+        <section className="lp-section lp-section--tight lp-section--paper">
+          <div className="lp-container">
+            <div className="lp-fomo lp-reveal">
+              <div className="lp-fomo__head">
+                <span className="lp-fomo__tag">🔥 Oferta de hoy</span>
+                <span className="lp-fomo__countdown-inline">Termina en <b data-cd="h">00</b>:<b data-cd="m">00</b>:<b data-cd="s">00</b></span>
+              </div>
+              <h2 className="lp-fomo__title">No comprar sería absurdo. Esto es por qué:</h2>
+              <div className="lp-fomo__grid">
+                <div className="lp-fomo__item">
+                  <span className="lp-fomo__num">1</span>
+                  <div><b>Pagas cuando lo tienes en la mano</b><p>Cero riesgo. Cero fraude. Si no llega, no pagas.</p></div>
+                </div>
+                <div className="lp-fomo__item">
+                  <span className="lp-fomo__num">2</span>
+                  <div><b>Gorra bordada GRATIS incluida</b><p>Que en otras marcas te cobran $45.000 aparte.</p></div>
+                </div>
+                <div className="lp-fomo__item">
+                  <span className="lp-fomo__num">3</span>
+                  <div><b>Ahorras $30.000 HOY</b><p>Mañana el precio regresa a $179.900. Sin excepciones.</p></div>
+                </div>
+                <div className="lp-fomo__item">
+                  <span className="lp-fomo__num">4</span>
+                  <div><b>Envío 100% gratis a toda Colombia</b><p>Despachamos desde Cúcuta en 24h. Llega en 24-48h.</p></div>
+                </div>
+              </div>
+              <div className="lp-fomo__bottom">
+                <div className="lp-fomo__vs">
+                  <div className="lp-fomo__vs-col">
+                    <span className="lp-fomo__vs-label">En centros comerciales</span>
+                    <b className="lp-fomo__vs-price">$280.000+</b>
+                    <small>Solo los tenis</small>
+                  </div>
+                  <div className="lp-fomo__vs-arrow">→</div>
+                  <div className="lp-fomo__vs-col lp-fomo__vs-col--win">
+                    <span className="lp-fomo__vs-label">Hoy aquí</span>
+                    <b className="lp-fomo__vs-price">$149.900</b>
+                    <small>Tenis + Gorra + Envío</small>
+                  </div>
+                </div>
+                <a href="#formulario" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic onClick={(e) => { e.preventDefault(); document.getElementById("formulario")?.scrollIntoView({behavior:"smooth"}); }}>
+                  <Icon name="bolt" style={{ width: 20, height: 20 }} /> ¡NO DEJAR PASAR ESTA OFERTA!
+                </a>
+                <p className="lp-fomo__warn">⚠️ Quedan <b>37 unidades</b> a este precio. Cuando se agoten, vuelve a $179.900.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ============ FORMULARIO ============ */}
         <section className="lp-section" id="formulario">
           <div className="lp-container">
@@ -1070,7 +1163,7 @@ export default function Home() {
                 </div>
 
                 <div className="lp-field">
-                  <label>Color: <b style={{ color: "var(--lp-amber-deep)" }}>{colorway.label}</b> · Talla: <b style={{ color: "var(--lp-amber-deep)" }}>{tall}</b> · Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{qty}</b></label>
+                  <label>Color: <b style={{ color: "var(--lp-amber-deep)" }}>{colorway.label}</b></label>
                   <div className="lp-pdp__colors" style={{ gap: 8 }}>
                     {COLORWAYS.map((c) => (
                       <button key={c.id} type="button" className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
@@ -1081,10 +1174,46 @@ export default function Home() {
                   </div>
                 </div>
 
-                <button type="submit" className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block" data-magnetic disabled={submitting}
+                <div className="lp-field">
+                  <label>Talla: <b style={{ color: "var(--lp-amber-deep)" }}>{tall}</b></label>
+                  <div className="lp-tallas">
+                    {TALLAS.map((t) => (
+                      <button key={t} type="button" className={`lp-talla ${tall === t ? "is-active" : ""}`}
+                        onClick={() => setTall(t)}>{t}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="lp-field">
+                  <label>Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{tier.qty} {tier.qty > 1 ? "combos" : "combo"}</b> · {tier.for}</label>
+                  <div className="lp-tiers">
+                    {TIERS.map((t) => {
+                      const tTotal = t.qty * t.unitPrice;
+                      const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
+                      return (
+                        <button key={t.id} type="button" className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
+                          onClick={() => selectTier(t)} aria-pressed={tier.id === t.id}>
+                          {t.badge && <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>{t.badge}</span>}
+                          <span className="lp-tier__radio" />
+                          <span className="lp-tier__main">
+                            <span className="lp-tier__title">{t.label}</span>
+                            <span className="lp-tier__for">{t.for}</span>
+                          </span>
+                          <span className="lp-tier__price">
+                            <span className="lp-tier__each">{formatCOP(t.unitPrice)} c/u</span>
+                            <span className="lp-tier__total">{formatCOP(tTotal)}</span>
+                            {tSave > 0 && <span className="lp-tier__save">Ahorras {formatCOP(tSave)}</span>}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <button type="submit" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic disabled={submitting}
                   style={{ marginTop: 8, opacity: submitting ? 0.7 : 1 }}>
-                  <Icon name="bolt" style={{ width: 18, height: 18 }} />
-                  {submitting ? "Procesando…" : `Confirmar pedido · ${formatCOP(total)}`}
+                  <Icon name="bolt" style={{ width: 20, height: 20 }} />
+                  {submitting ? "Procesando…" : `¡LO QUIERO! · ${formatCOP(total)}`}
                 </button>
 
                 <div className="lp-form__note">

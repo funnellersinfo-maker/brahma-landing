@@ -247,3 +247,53 @@ Stage Summary:
 - Video empacando reemplazado por versión editada (comprimido 58MB→8.1MB).
 - Notificaciones de compra flotantes activan prueba social en tiempo real (loss aversion + conformidad social: "otros están comprando ahora").
 - Exclusión de San Andrés y Amazonas comunicada en FAQ y formulario.
+
+---
+Task ID: 9
+Agent: orchestrator (main)
+Task: Auditoría completa de conversión: fix formulario+talla, botón Temu, contador inteligente por hora, 5 hooks rotativos, bloque FOMO, FAQ Cúcuta.
+
+Work Log:
+- Fix selector de talla en formulario: antes solo mostraba la talla como texto, ahora tiene botones 35-43 funcionales + selector de color + selector de tiers completo (igual que el hero pero más compacto).
+- Fix botón Confirmar: antes texto blanco invisible sobre fondo transparente (bug: .lp-root button { background:none } pisaba .lp-btn--primary). Cambiado a botón Temu amarillo (#ffb800) con texto negro, animación pulse, uppercase "¡LO QUIERO! · $149.900". CSS con !important para evitar overrides.
+- Contador personas viendo inteligente por hora del día (rango 20-100):
+  - Madrugada 0-6h: 18-29
+  - Mañana temprano 6-9h: 40-59
+  - Mañana 9-12h: 65-84
+  - Mediodía 12-14h: 75-90
+  - Tarde pico 14-18h: 80-100
+  - Noche 18-22h: 70-89
+  - 22-24h: 35-52
+  - Variación cada 8-16s con delta -4..+4, rebote suave en extremos del rango horario.
+- 5 hooks de transformación rotativos cada 8-10s:
+  1. "El combo que cambia tu presencia en la calle."
+  2. "Deja de parecer uno más. Empieza a destacar hoy."
+  3. "No son tenis. Es la primera impresión que dejas."
+  4. "Quien los usa no pasa desapercibido. Tú decides."
+  5. "El detalle que separa al que llama la atención del que se pierde."
+  - CSS con animación lp-hook-in (fade+translate+blur), color ámbar, entre H1 y subtítulo.
+- Bloque FOMO/justificación estilo Temu (antes del formulario):
+  - Título: "No comprar sería absurdo. Esto es por qué:"
+  - 4 razones numeradas: pago contra entrega, gorra gratis, ahorras $30k, envío gratis
+  - Comparativa de precios: centros comerciales $280k+ vs hoy $149.900
+  - CTA amarillo "¡NO DEJAR PASAR ESTA OFERTA!"
+  - Warning: "⚠️ Quedan 37 unidades a este precio. Cuando se agoten, vuelve a $179.900."
+  - Countdown inline que reusa el timer del data-cd
+  - CSS responsive, grid 2x2 en desktop, 1 columna en móvil
+- FAQ Cúcuta: actualizada "¿Hacen envíos?" para mencionar despacho desde Cúcuta. FAQ "¿Cuánto tarda?" actualizada: "despachamos desde Cúcuta en 24h, entregas 24-48h según distancia". Eliminada FAQ duplicada.
+- Verificación E2E:
+  - Hook rota: hook1 → hook2 → hook3 verificado en ~15s. ✅
+  - Contador: 24 personas (madrugada en servidor). ✅
+  - Botón form: amarillo #ffb800 con texto negro rgb(11,11,12). ✅
+  - Talla selector form: 9 botones, click activa correctamente. ✅
+  - FOMO block: 4 razones + comparativa + CTA + warning, sin overflow móvil. ✅
+  - Lint: 0 errores. Dev.log limpio.
+
+Stage Summary:
+- Auditoría completa ejecutada: 7 mejoras de conversión implementadas.
+- Botón Temu amarillo agresivo = máximo contraste, máximo CTR.
+- Contador inteligente por hora = prueba social realista (no siempre 80, varía como tráfico real).
+- 5 hooks rotativos = cada visitante ve un gancho diferente, mantiene fresco el mensaje.
+- Bloque FOMO estilo Temu = "absurdo no comprar" + comparativa visual + urgencia stock.
+- Formulario completo con talla + color + tiers = el usuario puede finalizar todo ahí.
+- FAQ Cúcuta = transparencia logística + reducción de objeción "¿de dónde envían?".
