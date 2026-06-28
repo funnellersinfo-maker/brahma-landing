@@ -495,7 +495,7 @@ export default function Home() {
                 <b>COMBO BRAHMA</b> · Monster Edition
               </div>
               <h1 className="lp-pdp__title">
-                Combo Brahma <em>Monster</em>
+                Combo Brahma <em>Monster</em> Zapatos + Gorra
               </h1>
               <p className="lp-pdp__subtitle">
                 Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
