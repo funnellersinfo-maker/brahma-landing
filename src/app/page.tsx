@@ -483,6 +483,7 @@ export default function Home() {
                   <button key={c.id} className={`lp-pdp__thumb ${colorway.id === c.id ? "is-active" : ""}`}
                     aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
                     <img src={c.img} alt="" loading="lazy" />
+                    <span className="lp-pdp__thumb-dot" style={{ background: c.hex }} aria-hidden="true" />
                   </button>
                 ))}
               </div>
