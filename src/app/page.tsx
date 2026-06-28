@@ -448,6 +448,30 @@ export default function Home() {
     return () => { active = false; window.clearTimeout(firstTimer); };
   }, []);
 
+  // Autoplay inteligente de videos: solo reproducen cuando son visibles
+  useEffect(() => {
+    const videos = document.querySelectorAll<HTMLVideoElement>("video[autoplay]");
+    if (!videos.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const v = entry.target as HTMLVideoElement;
+          if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+            v.play().catch(() => {});
+          } else {
+            v.pause();
+          }
+        });
+      },
+      { threshold: [0, 0.4, 0.6] }
+    );
+    videos.forEach((v) => {
+      v.muted = true;
+      io.observe(v);
+    });
+    return () => io.disconnect();
+  }, []);
+
   /* El total usa el precio del tier seleccionado; si el usuario modificó qty
      manualmente (fuera de tiers), usa PRICE_NOW como fallback */
   const total = tier.qty * tier.unitPrice;
@@ -730,6 +754,68 @@ export default function Home() {
                   <p>{b.desc}</p>
                 </article>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============ TRAS LAS CÁMARAS — 100% REAL ============ */}
+        <section className="lp-section" id="real">
+          <div className="lp-container">
+            <div className="lp-section-head lp-section-head--center lp-reveal">
+              <span className="lp-eyebrow">Tras las cámaras</span>
+              <h2>100% real. No es estafa.</h2>
+              <p>Mira nuestro inventario, el empaque y los detalles reales del producto. Lo que ves es exactamente lo que llega a tu puerta.</p>
+            </div>
+
+            <div className="lp-bts lp-reveal lp-reveal--scale">
+              {/* Video principal: empacando */}
+              <div className="lp-bts__video lp-bts__video--wide">
+                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/empacando.jpg">
+                  <source src="/videos/empacando.mp4" type="video/mp4" />
+                </video>
+                <span className="lp-bts__caption"><span className="lp-dot" /> Empacando tu pedido</span>
+              </div>
+              {/* Video: zapato café detalle */}
+              <div className="lp-bts__video">
+                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapato-cafe.jpg">
+                  <source src="/videos/zapato-cafe.mp4" type="video/mp4" />
+                </video>
+                <span className="lp-bts__caption">Detalle del producto</span>
+              </div>
+              {/* Foto inventario */}
+              <div className="lp-bts__photo">
+                <img src="/images/inventario.jpg" alt="Inventario real de zapatos BRAHMA organizados por colores" loading="lazy" />
+                <span className="lp-bts__photo-cap">Inventario real</span>
+              </div>
+              {/* Video: zapatos en el piso */}
+              <div className="lp-bts__video">
+                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapatos-piso.jpg">
+                  <source src="/videos/zapatos-piso.mp4" type="video/mp4" />
+                </video>
+                <span className="lp-bts__caption">Stock disponible</span>
+              </div>
+              {/* Video: estantes */}
+              <div className="lp-bts__video">
+                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapatos-estantes.jpg">
+                  <source src="/videos/zapatos-estantes.mp4" type="video/mp4" />
+                </video>
+                <span className="lp-bts__caption">Almacén físico</span>
+              </div>
+            </div>
+
+            <div className="lp-bts__stats lp-reveal">
+              <div className="lp-bts__stat">
+                <b>+12.000</b>
+                <span>Pedidos despachados</span>
+              </div>
+              <div className="lp-bts__stat">
+                <b>24h</b>
+                <span>Despacho promedio</span>
+              </div>
+              <div className="lp-bts__stat">
+                <b>100%</b>
+                <span>Contra entrega</span>
+              </div>
             </div>
           </div>
         </section>

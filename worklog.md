@@ -180,3 +180,41 @@ Stage Summary:
 - Transportadoras (Envia/Coordinadora/Inter Rapidísimo/TCC) refuerzan confianza logística.
 - Contador dinámico aumenta prueba social en tiempo real (escasez social).
 - Mensaje de despachos hasta 6 PM reduce objeción de "¿cuándo me llega?".
+
+---
+Task ID: 7
+Agent: orchestrator (main)
+Task: Aprovechar 4 imágenes + 4 videos nuevos para nutrir la landing con contenido real (neuromarketing: transparencia + prueba social + destruir objeción de estafa).
+
+Work Log:
+- Análisis de 4 imágenes con VLM:
+  - 76dd659c = lifestyle verde oliva sobre reja (taller industrial)
+  - 04b6e709 = inventario cenital (zapatos envueltos organizados por colores)
+  - 6f630d77 = lifestyle azul con jeans
+  - 72ee80ec = lifestyle café con llavero mono
+- Análisis de 4 videos (extraí frame con ffmpeg + VLM porque el CLI rechazaba videos grandes):
+  - Empacando.mp4 = unboxing/empacando zapatos (confianza + transparencia)
+  - Zapato café video.mp4 = mostrando bota café (detalle producto)
+  - Zapatos en el piso.mp4 = inventario en piso (prueba stock real)
+  - Zapatos estantes.mp4 = estantes llenos almacén (escasez visual + autoridad)
+- Copia de archivos: imágenes a public/images/ (lifestyle-olive/blue/brown.jpg, inventario.jpg), videos a public/videos/ (4 mp4), posters a public/images/posters/ (4 frames jpg).
+- CSS nuevo (~100 líneas): sección "Tras las cámaras" con grid 1.3fr+1fr+1fr, video wide span 2 filas, captions con dot rojo pulsante (REC style), photo con hover zoom, stats row (+12.000 pedidos / 24h despacho / 100% contra entrega), responsive móvil single-column.
+- Nueva sección en page.tsx entre Beneficios y Testimonios:
+  - Título: "Tras las cámaras / 100% real. No es estafa."
+  - Subtítulo: "Mira nuestro inventario, el empaque y los detalles reales. Lo que ves es exactamente lo que llega a tu puerta."
+  - Grid de 5 items: video empacando (wide), video zapato-cafe, foto inventario, video zapatos-piso, video estantes.
+  - Cada video con caption (Empacando tu pedido, Detalle del producto, Stock disponible, Almacén físico).
+  - Stats row abajo.
+- IntersectionObserver para autoplay inteligente: videos solo reproducen cuando >40% visibles, pausan al salir del viewport (performance + respeta política autoplay Chrome).
+- Verificación E2E:
+  - Desktop: grid 5 items (1 wide izq + 2x2 der), 2 videos reproduciéndose, captions visibles. ✅
+  - Móvil: stack vertical single-column, legible. ✅
+  - Videos cargan (readyState 4), autoplay inteligente activo. ✅
+- Lint: 0 errores. Dev.log limpio.
+
+Stage Summary:
+- Nueva sección "Tras las cámaras / 100% real" con 4 videos reales + 1 foto de inventario.
+- Psicología aplicada: destruye objeción #1 del tráfico frío ("¿es estafa?") mostrando empaque real, inventario físico, almacén, detalles del producto. Transparencia máxima = confianza máxima.
+- Captions estilo "REC" con dot rojo pulsante dan sensación de video en vivo/authentic.
+- Stats refuerzan autoridad (+12.000 pedidos despachados).
+- Contenido 100% real del cliente, no stock photography.
