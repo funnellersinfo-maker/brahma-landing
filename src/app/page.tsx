@@ -1413,8 +1413,11 @@ export default function Home() {
                   </div>
                 </div>
 
+                <p style={{ textAlign: "center", fontSize: "0.85rem", fontWeight: 600, color: "var(--lp-amber-deep)", margin: "16px 0 8px", letterSpacing: "0.02em" }}>
+                  Haz clic para finalizar tu pedido:
+                </p>
                 <button type="submit" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic disabled={submitting}
-                  style={{ marginTop: 8, opacity: submitting ? 0.7 : 1 }}>
+                  style={{ marginTop: 0, opacity: submitting ? 0.7 : 1 }}>
                   <Icon name="bolt" style={{ width: 20, height: 20 }} />
                   {submitting ? "Procesando…" : `¡LO QUIERO! · ${formatCOP(total)}`}
                 </button>
