@@ -375,13 +375,32 @@ export default function Home() {
       const y = window.scrollY;
       const vh = window.innerHeight;
       header?.classList.toggle("is-scrolled", y > 24);
-      if (stickyCta) stickyCta.classList.toggle("is-visible", y > vh * 0.85);
+      // No mostrar sticky CTA si el teclado está abierto
+      const keyboardOpen = document.body.classList.contains("keyboard-open");
+      if (stickyCta) stickyCta.classList.toggle("is-visible", y > vh * 0.85 && !keyboardOpen);
       if (buyBar && formSec) {
-        const show = y > vh * 0.9 && y < formSec.offsetTop - vh * 0.8;
+        const show = y > vh * 0.9 && y < formSec.offsetTop - vh * 0.8 && !keyboardOpen;
         buyBar.classList.toggle("is-visible", show);
       }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
+
+    // Detectar teclado móvil abierto/cerrado via visualViewport
+    const vv = window.visualViewport;
+    const onVvResize = () => {
+      if (!vv) return;
+      // Si el viewport visual es significativamente menor que el layout, el teclado está abierto
+      const keyboardOpen = vv.height < window.innerHeight * 0.75;
+      document.body.classList.toggle("keyboard-open", keyboardOpen);
+      // Forzar re-evaluación del sticky CTA
+      if (keyboardOpen) {
+        stickyCta?.classList.remove("is-visible");
+        buyBar?.classList.remove("is-visible");
+      }
+    };
+    if (vv) {
+      vv.addEventListener("resize", onVvResize);
+    }
     window.addEventListener("resize", onScroll);
     window.addEventListener("load", onScroll);
     onScroll();
@@ -520,6 +539,7 @@ export default function Home() {
       window.removeEventListener("scroll", checkVisibleNow);
       root.removeEventListener("click", onClick);
       root.removeEventListener("mousedown", onRipple);
+      if (vv) vv.removeEventListener("resize", onVvResize);
       window.clearTimeout(recalcTimer);
       window.clearTimeout(revealTimer);
       io.disconnect();

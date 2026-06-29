@@ -3604,3 +3604,12 @@ html { scroll-behavior: smooth; }
 .lp-dark-mode .lp-brand--footer .lp-brand__logo {
   filter: brightness(0) invert(1);
 }
+
+/* =====================================================================
+   KEYBOARD OPEN — ocultar elementos flotantes cuando el teclado móvil está abierto
+   ===================================================================== */
+body.keyboard-open .lp-sticky-cta,
+body.keyboard-open .lp-buy-bar,
+body.keyboard-open .lp-pn {
+  display: none !important;
+}
