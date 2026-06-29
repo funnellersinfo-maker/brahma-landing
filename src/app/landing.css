@@ -3004,24 +3004,23 @@ html { scroll-behavior: smooth; }
 
 /* ---------- Theme toggle button ---------- */
 .lp-theme-toggle {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  border: 1px solid var(--lp-line-2);
-  background: var(--lp-paper);
+  border-radius: 50%;
+  border: none;
+  background: transparent;
   color: var(--lp-ink);
   cursor: pointer;
-  transition: all 0.32s var(--lp-ease);
+  transition: transform 0.32s var(--lp-ease), opacity 0.32s var(--lp-ease);
   flex-shrink: 0;
+  opacity: 0.8;
 }
 .lp-theme-toggle:hover {
-  background: var(--lp-ink);
-  color: var(--lp-bone);
-  border-color: var(--lp-ink);
-  transform: rotate(15deg);
+  opacity: 1;
+  transform: rotate(20deg) scale(1.1);
 }
 /* En desktop el toggle va al lado del CTA; en móvil al lado del hamburger */
 @media (max-width: 768px) {
@@ -3255,8 +3254,8 @@ html { scroll-behavior: smooth; }
 .lp-dark-mode .lp-menu-btn span::before,
 .lp-dark-mode .lp-menu-btn span::after { background: var(--lp-ink); }
 .lp-dark-mode .lp-theme-toggle {
-  background: var(--lp-paper);
-  border-color: var(--lp-line-2);
+  background: transparent;
+  border: none;
   color: var(--lp-ink);
 }
 
