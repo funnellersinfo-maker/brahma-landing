@@ -412,8 +412,12 @@ export default function Home() {
     });
     const el = document.getElementById("formulario");
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 64;
-      window.scrollTo({ top, behavior: "smooth" });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      // Ajustar offset del header fijo después del scroll
+      window.setTimeout(() => {
+        const top = el.getBoundingClientRect().top + window.scrollY - 64;
+        window.scrollTo({ top, behavior: "auto" });
+      }, 500);
     }
   };
 
@@ -1313,8 +1317,8 @@ export default function Home() {
                     <small>Tenis + Gorra + Envío</small>
                   </div>
                 </div>
-                <a href="#formulario" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic onClick={(e) => { e.preventDefault(); document.getElementById("formulario")?.scrollIntoView({behavior:"smooth"}); }}>
-                  <Icon name="bolt" style={{ width: 20, height: 20 }} /> ¡NO DEJAR PASAR ESTA OFERTA!
+                <a href="#formulario" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm} style={{ justifyContent: "center", textAlign: "center" }}>
+                  <Icon name="bolt" style={{ width: 20, height: 18 }} /> ¡NO DEJAR PASAR!
                 </a>
                 <p className="lp-fomo__warn">⚠️ Quedan <b>37 unidades</b> a este precio. Cuando se agoten, vuelve a $179.900.</p>
               </div>
@@ -1512,7 +1516,7 @@ export default function Home() {
               <h4>Compra</h4>
               <a href="#formulario">Hacer pedido</a>
               <a href="#formulario">Pago contra entrega</a>
-              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Escríbenos al 300 000 0000", "info"); }}>WhatsApp</a>
+              <a href="#formulario" onClick={scrollToForm}>WhatsApp</a>
             </div>
             <div className="lp-footer__col">
               <h4>Confianza</h4>
