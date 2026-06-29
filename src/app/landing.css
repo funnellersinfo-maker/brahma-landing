@@ -81,6 +81,10 @@
   padding: 0;
 }
 
+/* Fix global: prevenir overflow horizontal en cualquier dispositivo */
+html, body { overflow-x: hidden; max-width: 100vw; }
+html { scroll-behavior: smooth; }
+
 .lp-root {
   font-family: var(--lp-font-body);
   font-size: 16px;
@@ -94,11 +98,16 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: 100vw;
+  max-width: 100%;
+  width: 100%;
 }
 .lp-root img, .lp-root video, .lp-root svg { max-width: 100%; }
 .lp-root h1, .lp-root h2, .lp-root h3 { overflow-wrap: break-word; word-break: break-word; }
-.lp-root .lp-main { flex: 1 0 auto; padding-top: var(--lp-header-h); }
+.lp-root .lp-main { flex: 1 0 auto; padding-top: var(--lp-header-h); max-width: 100%; overflow-x: hidden; }
+/* Todos los contenedores grid/flex: hijos nunca se desborden */
+.lp-root .lp-container { max-width: 100%; overflow-x: hidden; }
+.lp-root [class*="grid"], .lp-root [class*="flex"] { min-width: 0; }
+.lp-root [class*="grid"] > *, .lp-root [class*="flex"] > * { min-width: 0; }
 
 .lp-root h1,
 .lp-root h2,
@@ -2225,9 +2234,10 @@
   gap: clamp(28px, 4vw, 56px);
   align-items: start;
 }
+.lp-pdp__grid > * { min-width: 0; max-width: 100%; }
 
 /* Gallery stage (left) */
-.lp-pdp__gallery { position: relative; }
+.lp-pdp__gallery { position: relative; min-width: 0; max-width: 100%; overflow: hidden; }
 .lp-pdp__stage {
   position: relative;
   aspect-ratio: 1 / 1;
