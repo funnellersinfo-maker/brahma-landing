@@ -309,24 +309,24 @@ export default function Home() {
 
     // Detalle de cada par (color + talla)
     const paresDetalle = pares
-      .map((p, i) => `   ${i + 1}. Color: ${p.color.label} · Talla: ${p.talla}`)
+      .map((p, i) => `   ${i + 1}. Color: ${p.color.label} - Talla: ${p.talla}`)
       .join("\n");
 
     // Construir mensaje de WhatsApp con TODOS los datos del pedido
     const mensaje =
-      `🛒 *NUEVO PEDIDO - BRAHMA*\n\n` +
-      `👤 *Nombre:* ${form.name.trim()}\n` +
-      `📱 *Celular:* ${form.phone.trim()}\n` +
-      `🏙️ *Ciudad:* ${form.city.trim()}\n` +
-      `🏠 *Dirección:* ${form.address.trim()}\n` +
-      `📍 *Barrio:* ${form.barrio.trim()}\n` +
-      (form.referencia.trim() ? `🔖 *Referencia:* ${form.referencia.trim()}\n` : "") +
-      `\n👟 *Detalle del pedido:*\n${paresDetalle}\n\n` +
-      `📦 *Cantidad:* ${pares.length} ${pares.length > 1 ? "combos" : "combo"}\n` +
-      `💵 *Precio c/u:* ${formatCOP(unitPrice)}\n` +
-      `💰 *Total a pagar:* ${formatCOP(total)}\n` +
-      `💸 *Ahorras:* ${formatCOP(tierSave)}\n\n` +
-      `✅ *Pago Contra Entrega*`;
+      `*NUEVO PEDIDO - BRAHMA*\n\n` +
+      `- *Nombre:* ${form.name.trim()}\n` +
+      `- *Celular:* ${form.phone.trim()}\n` +
+      `- *Ciudad:* ${form.city.trim()}\n` +
+      `- *Direccion:* ${form.address.trim()}\n` +
+      `- *Barrio:* ${form.barrio.trim()}\n` +
+      (form.referencia.trim() ? `- *Referencia:* ${form.referencia.trim()}\n` : "") +
+      `\n*Detalle del pedido:*\n${paresDetalle}\n\n` +
+      `- *Cantidad:* ${pares.length} ${pares.length > 1 ? "combos" : "combo"}\n` +
+      `- *Precio c/u:* ${formatCOP(unitPrice)}\n` +
+      `- *Total a pagar:* ${formatCOP(total)}\n` +
+      `- *Ahorras:* ${formatCOP(tierSave)}\n\n` +
+      `*Pago Contra Entrega*`;
 
     const waNumber = "573228973800";
     const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(mensaje)}`;
