@@ -688,7 +688,8 @@ export default function Home() {
     pares.length === 2 ? 139900 :
     129900;
   const total = unitPrice * pares.length;
-  const tierSave = (PRICE_OLD - unitPrice) * pares.length;
+  // Ahorro real: diferencia entre precio normal (1 combo × cantidad) vs precio con descuento
+  const tierSave = (PRICE_NOW * pares.length) - total;
   // Tier activo (para resaltar el botón quick-select 1/2/3)
   const activeTierId =
     pares.length === 1 ? 1 :
@@ -845,15 +846,7 @@ export default function Home() {
                 <div className="lp-tiers">
                   {TIERS.map((t) => {
                     const tTotal = t.qty * t.unitPrice;
-                    const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
-                    return (
-                      <button
-                        key={t.id}
-                        type="button"
-                        className={`lp-tier ${activeTierId === t.id ? "is-active" : ""}`}
-                        onClick={() => selectTier(t)}
-                        aria-pressed={activeTierId === t.id}
-                      >
+                    const tSave = (PRICE_NOW - t.unitPrice) * t.qty;
                         {t.badge && (
                           <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>
                             {t.badge}
