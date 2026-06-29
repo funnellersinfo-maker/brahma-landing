@@ -814,7 +814,7 @@ export default function Home() {
               <div className="lp-variant">
                 <div className="lp-variant__label">
                   <b>Cantidad</b>
-                  <span>Ahorra más llevando más para la familia</span>
+                  <span>Ahorra más llevando más combos</span>
                 </div>
                 <div className="lp-tiers">
                   {TIERS.map((t) => {
@@ -911,7 +911,7 @@ export default function Home() {
                   ))}
                   <button type="button" className="lp-par__add" onClick={addPar}>
                     <Icon name="plus" style={{ width: 16, height: 16 }} />
-                    Añadir otro par
+                    + Añadir otro par por <b style={{ color: "var(--lp-amber-deep)" }}>{formatCOP(129900)}</b>
                   </button>
                 </div>
               </div>
@@ -931,7 +931,7 @@ export default function Home() {
                   <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir {pares.length} {pares.length > 1 ? "combos" : "combo"} · {formatCOP(total)}
                 </a>
                 <a href="#formulario" className="lp-btn lp-btn--ghost lp-btn--block" onClick={scrollToForm}>
-                  <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Comprar por WhatsApp
+                  <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Confirmar pedido vía WhatsApp
                 </a>
               </div>
 
@@ -1381,7 +1381,7 @@ export default function Home() {
                     ))}
                     <button type="button" className="lp-par__add" onClick={addPar}>
                       <Icon name="plus" style={{ width: 16, height: 16 }} />
-                      Añadir otro par
+                      + Añadir otro par por <b style={{ color: "var(--lp-amber-deep)" }}>{formatCOP(129900)}</b>
                     </button>
                   </div>
                 </div>

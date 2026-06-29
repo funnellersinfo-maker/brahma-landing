@@ -1881,7 +1881,7 @@ html { scroll-behavior: smooth; }
   z-index: 1;
   font-size: clamp(1.4rem, 3vw, 2rem);
   margin-bottom: 24px;
-  color: var(--lp-bone);
+  color: #fff !important;
 }
 .lp-fomo__grid {
   position: relative;
@@ -1913,7 +1913,7 @@ html { scroll-behavior: smooth; }
   font-size: 0.85rem;
   flex-shrink: 0;
 }
-.lp-fomo__item b { font-family: var(--lp-font-display); font-size: 0.92rem; display: block; margin-bottom: 3px; color: var(--lp-bone); }
+.lp-fomo__item b { font-family: var(--lp-font-display); font-size: 0.92rem; display: block; margin-bottom: 3px; color: #fff !important; }
 .lp-fomo__item p { font-size: 0.8rem; color: var(--lp-stone-2); line-height: 1.4; }
 .lp-fomo__bottom { position: relative; z-index: 1; }
 .lp-fomo__vs {
@@ -1941,9 +1941,9 @@ html { scroll-behavior: smooth; }
   text-align: center;
   margin-top: 14px;
   font-size: var(--lp-fs-sm);
-  color: var(--lp-amber);
+  color: #fff !important;
 }
-.lp-fomo__warn b { font-family: var(--lp-font-display); }
+.lp-fomo__warn b { font-family: var(--lp-font-display); color: var(--lp-amber) !important; }
 @media (max-width: 600px) {
   .lp-fomo__grid { grid-template-columns: 1fr; }
   .lp-fomo__vs { grid-template-columns: 1fr; gap: 8px; }
@@ -3329,10 +3329,14 @@ html { scroll-behavior: smooth; }
 }
 .lp-dark-mode .lp-tier:hover { border-color: var(--lp-ink); }
 .lp-dark-mode .lp-tier.is-active {
-  background: var(--lp-ink);
-  color: #fff;
-  border-color: var(--lp-ink);
+  background: #f5f2ec;
+  color: #0b0b0c !important;
+  border-color: #f5f2ec;
 }
+.lp-dark-mode .lp-tier.is-active .lp-tier__title,
+.lp-dark-mode .lp-tier.is-active .lp-tier__for,
+.lp-dark-mode .lp-tier.is-active .lp-tier__each,
+.lp-dark-mode .lp-tier.is-active .lp-tier__total { color: #0b0b0c !important; }
 .lp-dark-mode .lp-tier__radio { background: var(--lp-white); border-color: var(--lp-line-2); }
 .lp-dark-mode .lp-tier__save { color: var(--lp-amber); background: rgba(224,163,62,0.16); }
 .lp-dark-mode .lp-tier.is-active .lp-tier__save { color: #000; background: var(--lp-amber); }
