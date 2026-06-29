@@ -200,7 +200,7 @@ export default function Home() {
     return 35 + Math.floor(Math.random() * 18);                         // 22-24: 35-52
   });
   const [hookIdx, setHookIdx] = useState(0);
-  const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string } | null>(null);
+  const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string; qty: number } | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
   const [form, setForm] = useState({ name: "", phone: "", city: "", address: "", barrio: "", referencia: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -661,7 +661,10 @@ export default function Home() {
       const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2);
       const mins = Math.floor(Math.random() * 14) + 1; // 1-14 min
       const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
-      setPn({ name, city, color, initials, mins, avatarColor });
+      // Cantidad aleatoria de combos: más probabilidad de 1-2, algunos 3-7
+      const r = Math.random();
+      const qty = r < 0.45 ? 1 : r < 0.70 ? 2 : r < 0.85 ? 3 : r < 0.93 ? 4 : r < 0.97 ? 5 : r < 0.99 ? 6 : 7;
+      setPn({ name, city, color, initials, mins, avatarColor, qty });
       // Ocultar después de 5-6 segundos
       hideTimer = window.setTimeout(() => {
         setPn(null);
@@ -1502,7 +1505,7 @@ export default function Home() {
         <div className="lp-pn is-visible" role="status" aria-live="polite">
           <span className="lp-pn__avatar" style={{ background: pn.avatarColor }}>{pn.initials}</span>
           <div className="lp-pn__body">
-            <div className="lp-pn__title"><b>{pn.name}</b> compró combo {pn.color}</div>
+            <div className="lp-pn__title"><b>{pn.name}</b> compró {pn.qty} {pn.qty > 1 ? "combos" : "combo"} {pn.color}</div>
             <div className="lp-pn__meta"><Icon name="location" /> {pn.city} · hace {pn.mins} min</div>
           </div>
         </div>
