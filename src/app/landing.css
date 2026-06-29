@@ -1930,13 +1930,14 @@ html { scroll-behavior: smooth; }
 .lp-fomo__vs-col--win {
   background: rgba(255,184,0,0.12);
   border-radius: 12px;
-  padding: 10px;
+  padding: 14px;
 }
-.lp-fomo__vs-label { display: block; font-size: 0.7rem; color: var(--lp-stone-2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.lp-fomo__vs-label { display: block; font-size: 0.72rem; color: var(--lp-stone-2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
 .lp-fomo__vs-price { font-family: var(--lp-font-display); font-weight: 800; font-size: clamp(1.2rem, 3vw, 1.6rem); color: var(--lp-bone); display: block; }
 .lp-fomo__vs-col--win .lp-fomo__vs-price { color: var(--lp-amber); }
-.lp-fomo__vs-col small { font-size: 0.68rem; color: var(--lp-stone-2); display: block; margin-top: 2px; }
-.lp-fomo__vs-arrow { font-size: 1.5rem; color: var(--lp-amber); font-weight: 700; }
+.lp-fomo__vs-col small { font-size: 0.68rem; color: var(--lp-stone-2); display: block; margin-top: 6px; }
+.lp-fomo__vs-arrow { font-size: 1.5rem; color: var(--lp-amber); font-weight: 700; padding-block: 10px; }
+.lp-fomo__vs-arrow-inline { margin-block: 14px; }
 .lp-fomo__warn {
   text-align: center;
   margin-top: 14px;
@@ -1946,8 +1947,11 @@ html { scroll-behavior: smooth; }
 .lp-fomo__warn b { font-family: var(--lp-font-display); color: var(--lp-amber) !important; }
 @media (max-width: 600px) {
   .lp-fomo__grid { grid-template-columns: 1fr; }
-  .lp-fomo__vs { grid-template-columns: 1fr; gap: 8px; }
+  .lp-fomo__vs { grid-template-columns: 1fr; gap: 0; padding: 22px 18px; }
   .lp-fomo__vs-arrow { transform: rotate(90deg); }
+  .lp-fomo__vs-col:not(.lp-fomo__vs-col--win) { margin-bottom: 16px; }
+  .lp-fomo__vs-col--win { margin-top: 16px; }
+  .lp-fomo__vs-arrow-inline { margin-block: 16px; }
 }
 
 /* ---------- PURCHASE NOTIFICATIONS (prueba social flotante) ---------- */
