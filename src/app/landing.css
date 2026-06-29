@@ -3617,3 +3617,35 @@ body.keyboard-open .lp-buy-bar,
 body.keyboard-open .lp-pn {
   display: none !important;
 }
+
+/* =====================================================================
+   SCROLL TOP BUTTON — botón flotante junto al sticky CTA
+   ===================================================================== */
+.lp-scroll-top {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--lp-bone);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.3s var(--lp-ease);
+}
+.lp-scroll-top:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+}
+.lp-dark-mode .lp-scroll-top {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--lp-ink);
+}
+/* En desktop el scroll-top va a la izquierda del sticky CTA */
+.lp-sticky-cta { gap: 10px; }
+/* Ocultar cuando el teclado está abierto */
+body.keyboard-open .lp-scroll-top { display: none !important; }

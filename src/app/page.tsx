@@ -157,6 +157,7 @@ const Icon = ({ name, ...props }: { name: string } & React.SVGProps<SVGSVGElemen
     whatsapp: <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.2-.7-2.7-1.1-4.4-3.8-4.5-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.2 1.7 2 .9.7 1.6.9 1.9 1 .2 0 .4 0 .5-.1l.7-.8c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .7-.3 1.2z" />,
     bolt: <path d="M11 21l8-12h-5l2-8-8 12h5l-2 8z" />,
     arrowR: <path d="M4 11h12.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2z" />,
+    arrowUp: <path d="M4 12l1.4 1.4L11 7.8V20h2V7.8l5.6 5.6L20 12l-8-8-8 8z" />,
     sparkle: <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />,
     heart: <path d="M12 21l-1.5-1.4C5 14.8 2 12 2 8.5A4.5 4.5 0 016.5 4c1.5 0 3 .7 4 2 1-1.3 2.5-2 4-2A4.5 4.5 0 0119 8.5c0 3.5-3 6.3-8.5 11.1L12 21z" />,
     refresh: <path d="M12 5V2L7 7l5 5V8a5 5 0 11-5 5H5a7 7 0 107-8z" />,
@@ -181,7 +182,21 @@ const formatCOP = (n: number) => "$" + n.toLocaleString("es-CO");
 /* ------------------------------------------------------------------ */
 
 export default function Home() {
-  const [pares, setPares] = useState<Par[]>([{ id: 1, color: COLORWAYS[0], talla: "40" }]);
+  const [pares, setPares] = useState<Par[]>(() => {
+    try {
+      const saved = sessionStorage.getItem("lp-pares");
+      if (saved) {
+        const parsed = JSON.parse(saved) as { id: number; colorId: string; talla: string }[];
+        const restored = parsed.map((p) => ({
+          id: p.id,
+          color: COLORWAYS.find((c) => c.id === p.colorId) || COLORWAYS[0],
+          talla: p.talla,
+        }));
+        if (restored.length > 0) return restored;
+      }
+    } catch {}
+    return [{ id: 1, color: COLORWAYS[0], talla: "40" }];
+  });
   const [dark, setDark] = useState(() => {
     try { return typeof window !== "undefined" && localStorage.getItem("lp-dark") === "1"; } catch { return false; }
   });
@@ -202,7 +217,13 @@ export default function Home() {
   const [hookIdx, setHookIdx] = useState(0);
   const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string; qty: number } | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "", barrio: "", referencia: "" });
+  const [form, setForm] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem("lp-form");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return { name: "", phone: "", city: "", address: "", barrio: "", referencia: "" };
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
@@ -232,6 +253,43 @@ export default function Home() {
     try { localStorage.setItem("lp-dark", dark ? "1" : "0"); } catch {}
     document.documentElement.classList.toggle("lp-dark-mode", dark);
   }, [dark]);
+
+  // Persistir el estado del pedido en sessionStorage (sobrevive recargas)
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("lp-pares", JSON.stringify(pares.map((p) => ({ id: p.id, colorId: p.color.id, talla: p.talla }))));
+    } catch {}
+  }, [pares]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("lp-form", JSON.stringify(form));
+    } catch {}
+  }, [form]);
+
+  // Guardar y restaurar posición de scroll
+  useEffect(() => {
+    const savedScroll = sessionStorage.getItem("lp-scroll");
+    if (savedScroll) {
+      const y = parseInt(savedScroll, 10);
+      if (y > 100) {
+        window.setTimeout(() => window.scrollTo({ top: y, behavior: "auto" }), 100);
+      }
+    }
+    const onScrollSave = () => {
+      try { sessionStorage.setItem("lp-scroll", String(window.scrollY)); } catch {}
+    };
+    let scrollTimer: number;
+    const onScrollDebounced = () => {
+      window.clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(onScrollSave, 500);
+    };
+    window.addEventListener("scroll", onScrollDebounced, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScrollDebounced);
+      window.clearTimeout(scrollTimer);
+    };
+  }, []);
 
   const toggleFaq = (i: number) => setFaqOpen((p) => (p === i ? null : i));
 
@@ -1476,6 +1534,13 @@ export default function Home() {
 
       {/* ============ STICKY CTA MOBILE ============ */}
       <div className="lp-sticky-cta" role="region" aria-label="Comprar">
+        <button
+          className="lp-scroll-top"
+          aria-label="Volver arriba"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <Icon name="arrowUp" style={{ width: 18, height: 18 }} />
+        </button>
         <div className="lp-sticky-cta__info">
           <div className="lp-sticky-cta__price">{formatCOP(total)} <small>{formatCOP(PRICE_OLD * pares.length)}</small></div>
           <div className="lp-sticky-cta__sub">Pago al recibir · Envío gratis</div>
