@@ -529,7 +529,7 @@ export default function Home() {
     };
   }, []);
 
-  // Countdown timer (end of day)
+  // Countdown timer (end of day) — sincroniza TODOS los [data-cd] por su atributo (h/m/s)
   useEffect(() => {
     const units = document.querySelectorAll<HTMLElement>("[data-cd]");
     if (!units.length) return;
@@ -538,11 +538,14 @@ export default function Home() {
       const end = new Date();
       end.setHours(23, 59, 59, 999);
       let diff = Math.max(0, end.getTime() - now.getTime());
-      const h = Math.floor(diff / 3600000); diff -= h * 3600000;
-      const m = Math.floor(diff / 60000); diff -= m * 60000;
-      const s = Math.floor(diff / 1000);
-      const vals = [String(h).padStart(2, "0"), String(m).padStart(2, "0"), String(s).padStart(2, "0")];
-      units.forEach((u, i) => { if (vals[i] != null) u.textContent = vals[i]; });
+      const h = String(Math.floor(diff / 3600000)).padStart(2, "0"); diff -= Math.floor(diff / 3600000) * 3600000;
+      const m = String(Math.floor(diff / 60000)).padStart(2, "0"); diff -= Math.floor(diff / 60000) * 60000;
+      const s = String(Math.floor(diff / 1000)).padStart(2, "0");
+      const map: Record<string, string> = { h, m, s };
+      units.forEach((u) => {
+        const key = u.getAttribute("data-cd");
+        if (key && map[key] != null) u.textContent = map[key];
+      });
     };
     tick();
     const id = window.setInterval(tick, 1000);
