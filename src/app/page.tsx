@@ -29,6 +29,9 @@ const PRICE_NOW = 149900;
 const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
 const TALLAS = ["35", "36", "37", "38", "39", "40", "41", "42", "43"];
 
+/* Sistema de pares dinámicos — cada par tiene su propio color y talla */
+type Par = { id: number; color: Colorway; talla: string };
+
 /* Tiers de compra familiar — activa cerebro reptiliano (provisión + regalo) */
 type Tier = {
   id: number;
@@ -161,6 +164,8 @@ const Icon = ({ name, ...props }: { name: string } & React.SVGProps<SVGSVGElemen
     checkDouble: <path d="M18 7l-9 9-4-4-1.4 1.4L9 19l10.4-10.6L18 7zm-3.6 0L9 12.4 7.6 11 6.2 12.4l2.8 2.8 7.8-7.8L14.4 7z" />,
     fire: <path d="M13 1c1 3-1 5-2.5 6.5C9 9 8 10.5 8 13a4 4 0 008 0c0-2-1-3.5-2-5 .5 2-.5 3-1.5 3 1.5-3-.5-7-3-10 .5 4-3 5-3 9a6 6 0 0012 0c0-4-2-7-5-9z" />,
     bag: <path d="M6 8h12l1 13H5L6 8zm3-2a3 3 0 016 0v2h-2V6a1 1 0 10-2 0v2H9V6z" />,
+    sun: <path d="M12 7a5 5 0 100 10 5 5 0 000-10zm0-5a1 1 0 011 1v2a1 1 0 01-2 0V3a1 1 0 011-1zm0 17a1 1 0 011 1v2a1 1 0 01-2 0v-2a1 1 0 011-1zM4.2 4.2a1 1 0 011.4 0l1.5 1.5a1 1 0 11-1.4 1.4L4.2 5.6a1 1 0 010-1.4zm12.3 12.3a1 1 0 011.4 0l1.5 1.5a1 1 0 01-1.4 1.4l-1.5-1.5a1 1 0 010-1.4zM2 12a1 1 0 011-1h2a1 1 0 010 2H3a1 1 0 01-1-1zm17 0a1 1 0 011-1h2a1 1 0 010 2h-2a1 1 0 01-1-1zM4.2 19.8a1 1 0 010-1.4l1.5-1.5a1 1 0 011.4 1.4l-1.5 1.5a1 1 0 01-1.4 0zm12.3-12.3a1 1 0 010-1.4l1.5-1.5a1 1 0 011.4 1.4l-1.5 1.5a1 1 0 01-1.4 0z" />,
+    moon: <path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z" />,
   };
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
@@ -176,10 +181,13 @@ const formatCOP = (n: number) => "$" + n.toLocaleString("es-CO");
 /* ------------------------------------------------------------------ */
 
 export default function Home() {
-  const [colorway, setColorway] = useState<Colorway>(COLORWAYS[0]);
-  const [qty, setQty] = useState(1);
-  const [tier, setTier] = useState<Tier>(TIERS[0]);
-  const [tall, setTall] = useState("40");
+  const [pares, setPares] = useState<Par[]>([{ id: 1, color: COLORWAYS[0], talla: "40" }]);
+  const [dark, setDark] = useState(() => {
+    try { return typeof window !== "undefined" && localStorage.getItem("lp-dark") === "1"; } catch { return false; }
+  });
+  const parSeqRef = useRef(1);
+  // colorway derivado del primer par — controla la imagen del hero
+  const colorway = pares[0]?.color ?? COLORWAYS[0];
   const [views, setViews] = useState(() => {
     // Rango inteligente según hora del día (tráfico frío realista)
     const h = new Date().getHours();
@@ -194,7 +202,7 @@ export default function Home() {
   const [hookIdx, setHookIdx] = useState(0);
   const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string } | null>(null);
   const [faqOpen, setFaqOpen] = useState<number | null>(0);
-  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
+  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "", barrio: "", referencia: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
@@ -219,19 +227,56 @@ export default function Home() {
     });
   }, []);
 
-  const selectColorway = (cw: Colorway) => {
-    setColorway(cw);
-    setForm((f) => ({ ...f }));
-  };
+  // Dark mode: persistir cambios en localStorage + aplicar clase al <html>
+  useEffect(() => {
+    try { localStorage.setItem("lp-dark", dark ? "1" : "0"); } catch {}
+    document.documentElement.classList.toggle("lp-dark-mode", dark);
+  }, [dark]);
 
   const toggleFaq = (i: number) => setFaqOpen((p) => (p === i ? null : i));
 
-  const incQty = () => setQty((q) => Math.min(9, q + 1));
-  const decQty = () => setQty((q) => Math.max(1, q - 1));
+  // Cambiar color del primer par (sincroniza con la imagen del hero)
+  const selectColorway = (cw: Colorway) => {
+    setPares((prev) => prev.map((p, i) => (i === 0 ? { ...p, color: cw } : p)));
+  };
 
+  // Tier quick-select: ajusta la cantidad de pares (1/2/3)
   const selectTier = (t: Tier) => {
-    setTier(t);
-    setQty(t.qty);
+    setPares((prev) => {
+      const next = [...prev];
+      if (t.qty > next.length) {
+        for (let i = next.length; i < t.qty; i++) {
+          parSeqRef.current += 1;
+          const usedColors = next.map((p) => p.color.id);
+          const nextColor = COLORWAYS.find((c) => !usedColors.includes(c.id)) ?? COLORWAYS[i % COLORWAYS.length];
+          next.push({ id: parSeqRef.current, color: nextColor, talla: "40" });
+        }
+      } else if (t.qty < next.length) {
+        next.length = t.qty;
+      }
+      return next;
+    });
+  };
+
+  const addPar = () => {
+    setPares((prev) => {
+      parSeqRef.current += 1;
+      const usedColors = prev.map((p) => p.color.id);
+      const nextColor = COLORWAYS.find((c) => !usedColors.includes(c.id)) ?? COLORWAYS[prev.length % COLORWAYS.length];
+      return [...prev, { id: parSeqRef.current, color: nextColor, talla: "40" }];
+    });
+  };
+
+  const removePar = (id: number) => {
+    setPares((prev) => (prev.length <= 1 ? prev : prev.filter((p) => p.id !== id)));
+  };
+
+  const setParColor = (id: number, color: Colorway) => {
+    setPares((prev) => prev.map((p) => (p.id === id ? { ...p, color } : p)));
+  };
+
+  const setParTalla = (id: number, talla: string) => {
+    setPares((prev) => prev.map((p) => (p.id === id ? { ...p, talla } : p)));
   };
 
   const validate = () => {
@@ -240,6 +285,7 @@ export default function Home() {
     if (!/^3\d{8,9}$/.test(form.phone.replace(/\s/g, ""))) e.phone = "Celular inválido (ej: 3001234567)";
     if (!form.city.trim()) e.city = "Selecciona tu ciudad";
     if (!form.address.trim() || form.address.trim().length < 6) e.address = "Escribe una dirección completa";
+    if (!form.barrio.trim() || form.barrio.trim().length < 3) e.barrio = "Escribe tu barrio";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -258,18 +304,26 @@ export default function Home() {
       content_category: "Calzado",
       value: total,
       currency: "COP",
+      num_items: pares.length,
     });
 
-    // Construir mensaje de WhatsApp con todos los datos del pedido
+    // Detalle de cada par (color + talla)
+    const paresDetalle = pares
+      .map((p, i) => `   ${i + 1}. Color: ${p.color.label} · Talla: ${p.talla}`)
+      .join("\n");
+
+    // Construir mensaje de WhatsApp con TODOS los datos del pedido
     const mensaje =
       `🛒 *NUEVO PEDIDO - BRAHMA*\n\n` +
       `👤 *Nombre:* ${form.name.trim()}\n` +
       `📱 *Celular:* ${form.phone.trim()}\n` +
       `🏙️ *Ciudad:* ${form.city.trim()}\n` +
-      `🏠 *Dirección:* ${form.address.trim()}\n\n` +
-      `👟 *Detalle:*\n   Color: ${colorway.label} · Talla: ${tall}\n\n` +
-      `📦 *Cantidad:* ${tier.qty} ${tier.qty > 1 ? "combos" : "combo"}\n` +
-      `💵 *Precio c/u:* ${formatCOP(tier.unitPrice)}\n` +
+      `🏠 *Dirección:* ${form.address.trim()}\n` +
+      `📍 *Barrio:* ${form.barrio.trim()}\n` +
+      (form.referencia.trim() ? `🔖 *Referencia:* ${form.referencia.trim()}\n` : "") +
+      `\n👟 *Detalle del pedido:*\n${paresDetalle}\n\n` +
+      `📦 *Cantidad:* ${pares.length} ${pares.length > 1 ? "combos" : "combo"}\n` +
+      `💵 *Precio c/u:* ${formatCOP(unitPrice)}\n` +
       `💰 *Total a pagar:* ${formatCOP(total)}\n` +
       `💸 *Ahorras:* ${formatCOP(tierSave)}\n\n` +
       `✅ *Pago Contra Entrega*`;
@@ -281,7 +335,9 @@ export default function Home() {
     window.setTimeout(() => {
       window.open(waUrl, "_blank");
       setSubmitting(false);
-      setForm({ name: "", phone: "", city: "", address: "" });
+      setForm({ name: "", phone: "", city: "", address: "", barrio: "", referencia: "" });
+      setPares([{ id: 1, color: COLORWAYS[0], talla: "40" }]);
+      parSeqRef.current = 1;
     }, 600);
   };
 
@@ -292,7 +348,7 @@ export default function Home() {
       content_name: "Combo Brahma Moster",
       content_ids: ["brahma-moster"],
       content_type: "product",
-      num_items: tier.qty,
+      num_items: pares.length,
       value: total,
       currency: "COP",
     });
@@ -599,10 +655,19 @@ export default function Home() {
     };
   }, []);
 
-  /* El total usa el precio del tier seleccionado; si el usuario modificó qty
-     manualmente (fuera de tiers), usa PRICE_NOW como fallback */
-  const total = tier.qty * tier.unitPrice;
-  const tierSave = (PRICE_OLD - tier.unitPrice) * tier.qty;
+  /* Pricing dinámico basado en cantidad de pares:
+     1 par = $149.900 | 2 pares = $139.900 c/u | 3+ pares = $129.900 c/u */
+  const unitPrice =
+    pares.length === 1 ? 149900 :
+    pares.length === 2 ? 139900 :
+    129900;
+  const total = unitPrice * pares.length;
+  const tierSave = (PRICE_OLD - unitPrice) * pares.length;
+  // Tier activo (para resaltar el botón quick-select 1/2/3)
+  const activeTierId =
+    pares.length === 1 ? 1 :
+    pares.length === 2 ? 2 :
+    pares.length === 3 ? 3 : null;
 
   return (
     <div className="lp-root" ref={rootRef}>
@@ -633,6 +698,13 @@ export default function Home() {
             s?.classList.toggle("is-open", willOpen);
             document.body.style.overflow = willOpen ? "hidden" : "";
           }}><span /></button>
+          <button
+            className="lp-theme-toggle"
+            aria-label={dark ? "Modo claro" : "Modo oscuro"}
+            onClick={() => setDark((d) => !d)}
+          >
+            <Icon name={dark ? "sun" : "moon"} style={{ width: 18, height: 18 }} />
+          </button>
         </div>
       </header>
       <div className="lp-mobile-scrim" onClick={() => {
@@ -738,37 +810,7 @@ export default function Home() {
               </div>
               <p className="lp-pdp__tax">Incluye envío gratis · <b>Pago contra entrega</b> · Impuestos incluidos</p>
 
-              {/* Color selector */}
-              <div className="lp-variant">
-                <div className="lp-variant__label">
-                  <b>Color</b>
-                  <span>{colorway.label}</span>
-                </div>
-                <div className="lp-pdp__colors">
-                  {COLORWAYS.map((c) => (
-                    <button key={c.id} className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
-                      aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
-                      <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Talla selector */}
-              <div className="lp-variant">
-                <div className="lp-variant__label">
-                  <b>Talla</b>
-                  <span className="lp-talla-guide">Guía de tallas</span>
-                </div>
-                <div className="lp-tallas">
-                  {TALLAS.map((t) => (
-                    <button key={t} className={`lp-talla ${tall === t ? "is-active" : ""}`}
-                      onClick={() => setTall(t)}>{t}</button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tier selector — compra familiar (cerebro reptiliano) */}
+              {/* Tier quick-select — compra familiar (cerebro reptiliano) */}
               <div className="lp-variant">
                 <div className="lp-variant__label">
                   <b>Cantidad</b>
@@ -782,9 +824,9 @@ export default function Home() {
                       <button
                         key={t.id}
                         type="button"
-                        className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
+                        className={`lp-tier ${activeTierId === t.id ? "is-active" : ""}`}
                         onClick={() => selectTier(t)}
-                        aria-pressed={tier.id === t.id}
+                        aria-pressed={activeTierId === t.id}
                       >
                         {t.badge && (
                           <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>
@@ -807,6 +849,73 @@ export default function Home() {
                 </div>
               </div>
 
+              {/* Pares dinámicos — cada par con su propio color y talla */}
+              <div className="lp-variant">
+                <div className="lp-variant__label">
+                  <b>Tus pares</b>
+                  <span>{pares.length} {pares.length > 1 ? "combos seleccionados" : "combo seleccionado"}</span>
+                </div>
+                <div className="lp-pares">
+                  {pares.map((par, idx) => (
+                    <div key={par.id} className="lp-par">
+                      <div className="lp-par__head">
+                        <span className="lp-par__num">{idx + 1}</span>
+                        <div className="lp-par__info">
+                          <b>{par.color.label}</b>
+                          <small>Talla {par.talla}</small>
+                        </div>
+                        {pares.length > 1 && (
+                          <button
+                            type="button"
+                            className="lp-par__remove"
+                            aria-label="Quitar par"
+                            onClick={() => removePar(par.id)}
+                          >
+                            <Icon name="x" style={{ width: 14, height: 14 }} />
+                          </button>
+                        )}
+                      </div>
+                      <div className="lp-par__controls">
+                        <div className="lp-par__row">
+                          <span className="lp-par__row-label">Color</span>
+                          <div className="lp-par__colors">
+                            {COLORWAYS.map((c) => (
+                              <button
+                                key={c.id}
+                                type="button"
+                                className={`lp-par__color ${par.color.id === c.id ? "is-active" : ""}`}
+                                style={{ background: c.hex }}
+                                aria-label={c.label}
+                                onClick={() => setParColor(par.id, c)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="lp-par__row">
+                          <span className="lp-par__row-label">Talla</span>
+                          <div className="lp-par__tallas">
+                            {TALLAS.map((t) => (
+                              <button
+                                key={t}
+                                type="button"
+                                className={`lp-talla ${par.talla === t ? "is-active" : ""}`}
+                                onClick={() => setParTalla(par.id, t)}
+                              >
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button type="button" className="lp-par__add" onClick={addPar}>
+                    <Icon name="plus" style={{ width: 16, height: 16 }} />
+                    Añadir otro par
+                  </button>
+                </div>
+              </div>
+
               {/* Stock bar */}
               <div className="lp-pdp__stock">
                 <div className="lp-pdp__stock-row">
@@ -819,7 +928,7 @@ export default function Home() {
               {/* CTA */}
               <div className="lp-pdp__cta">
                 <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
-                  <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir {tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {formatCOP(total)}
+                  <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir {pares.length} {pares.length > 1 ? "combos" : "combo"} · {formatCOP(total)}
                 </a>
                 <a href="#formulario" className="lp-btn lp-btn--ghost lp-btn--block" onClick={scrollToForm}>
                   <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Comprar por WhatsApp
@@ -1143,11 +1252,15 @@ export default function Home() {
                   <li><Icon name="whatsapp" /> Confirmación por WhatsApp</li>
                 </ul>
                 <div className="lp-form-summary__price">
-                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label}, Talla {tall})</span><span>{formatCOP(tier.unitPrice)}</span></div>
+                  {pares.map((p, i) => (
+                    <div className="lp-row" key={p.id}>
+                      <span>Par {i + 1}: {p.color.label} · Talla {p.talla}</span>
+                      <span>{formatCOP(unitPrice)}</span>
+                    </div>
+                  ))}
                   <div className="lp-row"><span>Gorra bordada de regalo</span><span>$0</span></div>
                   <div className="lp-row"><span>Envío</span><span>Gratis</span></div>
-                  <div className="lp-row"><span>Cantidad</span><span>{tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {tier.for}</span></div>
-                  {tierSave > 0 && <div className="lp-row"><span>Ahorro por llevar {tier.qty}</span><span style={{ color: "var(--lp-amber-deep)", fontWeight: 600 }}>-{formatCOP(tierSave)}</span></div>}
+                  {tierSave > 0 && <div className="lp-row"><span>Ahorro por llevar {pares.length}</span><span style={{ color: "var(--lp-amber-deep)", fontWeight: 600 }}>-{formatCOP(tierSave)}</span></div>}
                   <div className="lp-row lp-row--total"><span>Total a pagar</span><span>{formatCOP(total)}</span></div>
                 </div>
               </div>
@@ -1190,37 +1303,28 @@ export default function Home() {
                   <span className="lp-field__error">{errors.address}</span>
                 </div>
 
-                <div className="lp-field">
-                  <label>Color: <b style={{ color: "var(--lp-amber-deep)" }}>{colorway.label}</b></label>
-                  <div className="lp-pdp__colors" style={{ gap: 8 }}>
-                    {COLORWAYS.map((c) => (
-                      <button key={c.id} type="button" className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
-                        style={{ width: 40, height: 40, padding: 3 }} aria-label={c.label} onClick={() => selectColorway(c)}>
-                        <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
-                      </button>
-                    ))}
-                  </div>
+                <div className={`lp-field ${errors.barrio ? "has-error" : ""}`}>
+                  <label htmlFor="f-barrio">Barrio <span className="lp-req">*</span></label>
+                  <input id="f-barrio" className={`lp-input ${errors.barrio ? "is-error" : ""}`} type="text" placeholder="Ej: La Soledad, El Poblado, Centro..." autoComplete="address-level2"
+                    value={form.barrio} onChange={(e) => setForm({ ...form, barrio: e.target.value })} />
+                  <span className="lp-field__error">{errors.barrio}</span>
                 </div>
 
                 <div className="lp-field">
-                  <label>Talla: <b style={{ color: "var(--lp-amber-deep)" }}>{tall}</b></label>
-                  <div className="lp-tallas">
-                    {TALLAS.map((t) => (
-                      <button key={t} type="button" className={`lp-talla ${tall === t ? "is-active" : ""}`}
-                        onClick={() => setTall(t)}>{t}</button>
-                    ))}
-                  </div>
+                  <label htmlFor="f-ref">Referencia <span style={{ color: "var(--lp-stone)", fontWeight: 400 }}>(opcional)</span></label>
+                  <input id="f-ref" className="lp-input" type="text" placeholder="Ej: Al lado de la panadería, casa con portón azul..."
+                    value={form.referencia} onChange={(e) => setForm({ ...form, referencia: e.target.value })} />
                 </div>
 
                 <div className="lp-field">
-                  <label>Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{tier.qty} {tier.qty > 1 ? "combos" : "combo"}</b> · {tier.for}</label>
+                  <label>Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{pares.length} {pares.length > 1 ? "combos" : "combo"}</b> · {pares.length === 1 ? "Para ti" : pares.length === 2 ? "Para ti y tu pareja" : "Para toda la familia"}</label>
                   <div className="lp-tiers">
                     {TIERS.map((t) => {
                       const tTotal = t.qty * t.unitPrice;
                       const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
                       return (
-                        <button key={t.id} type="button" className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
-                          onClick={() => selectTier(t)} aria-pressed={tier.id === t.id}>
+                        <button key={t.id} type="button" className={`lp-tier ${activeTierId === t.id ? "is-active" : ""}`}
+                          onClick={() => selectTier(t)} aria-pressed={activeTierId === t.id}>
                           {t.badge && <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>{t.badge}</span>}
                           <span className="lp-tier__radio" />
                           <span className="lp-tier__main">
@@ -1235,6 +1339,50 @@ export default function Home() {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                <div className="lp-field">
+                  <label>Tus pares: <b style={{ color: "var(--lp-amber-deep)" }}>{pares.length}</b> {pares.length > 1 ? "combos" : "combo"}</label>
+                  <div className="lp-pares">
+                    {pares.map((par, idx) => (
+                      <div key={par.id} className="lp-par">
+                        <div className="lp-par__head">
+                          <span className="lp-par__num">{idx + 1}</span>
+                          <div className="lp-par__info">
+                            <b>{par.color.label}</b>
+                            <small>Talla {par.talla}</small>
+                          </div>
+                          {pares.length > 1 && (
+                            <button type="button" className="lp-par__remove" aria-label="Quitar par" onClick={() => removePar(par.id)}>
+                              <Icon name="x" style={{ width: 14, height: 14 }} />
+                            </button>
+                          )}
+                        </div>
+                        <div className="lp-par__controls">
+                          <div className="lp-par__row">
+                            <span className="lp-par__row-label">Color</span>
+                            <div className="lp-par__colors">
+                              {COLORWAYS.map((c) => (
+                                <button key={c.id} type="button" className={`lp-par__color ${par.color.id === c.id ? "is-active" : ""}`} style={{ background: c.hex }} aria-label={c.label} onClick={() => setParColor(par.id, c)} />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="lp-par__row">
+                            <span className="lp-par__row-label">Talla</span>
+                            <div className="lp-par__tallas">
+                              {TALLAS.map((t) => (
+                                <button key={t} type="button" className={`lp-talla ${par.talla === t ? "is-active" : ""}`} onClick={() => setParTalla(par.id, t)}>{t}</button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button type="button" className="lp-par__add" onClick={addPar}>
+                      <Icon name="plus" style={{ width: 16, height: 16 }} />
+                      Añadir otro par
+                    </button>
                   </div>
                 </div>
 
@@ -1299,7 +1447,7 @@ export default function Home() {
       {/* ============ STICKY CTA MOBILE ============ */}
       <div className="lp-sticky-cta" role="region" aria-label="Comprar">
         <div className="lp-sticky-cta__info">
-          <div className="lp-sticky-cta__price">{formatCOP(PRICE_NOW)} <small>{formatCOP(PRICE_OLD)}</small></div>
+          <div className="lp-sticky-cta__price">{formatCOP(total)} <small>{formatCOP(PRICE_OLD * pares.length)}</small></div>
           <div className="lp-sticky-cta__sub">Pago al recibir · Envío gratis</div>
         </div>
         <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic onClick={scrollToForm}>
@@ -1310,8 +1458,8 @@ export default function Home() {
       {/* ============ DESKTOP BUY BAR ============ */}
       <div className="lp-buy-bar">
         <div className="lp-buy-bar__price">
-          {formatCOP(PRICE_NOW)}
-          <small>{formatCOP(PRICE_OLD)}</small>
+          {formatCOP(total)}
+          <small>{formatCOP(PRICE_OLD * pares.length)}</small>
         </div>
         <a href="#formulario" className="lp-btn lp-btn--light" data-magnetic onClick={scrollToForm}>
           <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar ahora

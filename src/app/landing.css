@@ -2987,3 +2987,607 @@
   .lp-talla { min-width: 44px; padding: 10px 12px; font-size: 0.875rem; }
   .lp-talla-guide { display: none; }
 }
+
+/* =====================================================================
+   v3 — DARK MODE TOGGLE + PARES DINÁMICOS + BARRIO/REFERENCIA
+   ===================================================================== */
+
+/* ---------- Theme toggle button ---------- */
+.lp-theme-toggle {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  border: 1px solid var(--lp-line-2);
+  background: var(--lp-paper);
+  color: var(--lp-ink);
+  cursor: pointer;
+  transition: all 0.32s var(--lp-ease);
+  flex-shrink: 0;
+}
+.lp-theme-toggle:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+  border-color: var(--lp-ink);
+  transform: rotate(15deg);
+}
+/* En desktop el toggle va al lado del CTA; en móvil al lado del hamburger */
+@media (max-width: 768px) {
+  .lp-theme-toggle { margin-left: 8px; }
+}
+
+/* ---------- Placeholder translúcido ---------- */
+.lp-input::placeholder,
+.lp-select::placeholder,
+.lp-textarea::placeholder {
+  color: var(--lp-stone-2);
+  opacity: 0.7;
+}
+
+/* ---------- Sistema de pares dinámicos ---------- */
+.lp-pares {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+.lp-par {
+  position: relative;
+  background: var(--lp-paper);
+  border: 1.5px solid var(--lp-line-2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  transition: border-color var(--lp-dur-fast) var(--lp-ease), box-shadow var(--lp-dur-fast) var(--lp-ease);
+}
+.lp-par:hover {
+  border-color: var(--lp-ink);
+  box-shadow: var(--lp-shadow-sm);
+}
+.lp-par__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--lp-line);
+}
+.lp-par__num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+  display: grid;
+  place-items: center;
+  font-family: var(--lp-font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.lp-par__info {
+  flex: 1;
+  min-width: 0;
+}
+.lp-par__info b {
+  font-family: var(--lp-font-display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: block;
+  line-height: 1.2;
+}
+.lp-par__info small {
+  font-size: 0.75rem;
+  color: var(--lp-stone);
+  display: block;
+  margin-top: 2px;
+}
+.lp-par__remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--lp-bone-2);
+  color: var(--lp-stone);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all var(--lp-dur-fast) var(--lp-ease);
+  flex-shrink: 0;
+}
+.lp-par__remove:hover {
+  background: #c0392b;
+  color: #fff;
+  transform: rotate(90deg);
+}
+.lp-par__controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lp-par__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lp-par__row-label {
+  font-size: var(--lp-fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lp-stone);
+  width: 48px;
+  flex-shrink: 0;
+}
+.lp-par__colors {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lp-par__color {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--lp-dur-fast) var(--lp-ease), border-color var(--lp-dur-fast) var(--lp-ease);
+  box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.3);
+}
+.lp-par__color:hover { transform: scale(1.15); }
+.lp-par__color.is-active {
+  border-color: var(--lp-ink);
+  transform: scale(1.15);
+}
+.lp-par__color.is-active::after {
+  content: "";
+  position: absolute;
+}
+.lp-par__tallas {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.lp-par__tallas::-webkit-scrollbar { height: 4px; }
+.lp-par__tallas::-webkit-scrollbar-thumb { background: var(--lp-line-2); border: none; }
+.lp-par__tallas .lp-talla {
+  min-width: 38px;
+  padding: 7px 9px;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+.lp-par__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1.5px dashed var(--lp-line-2);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--lp-ink-2);
+  font-family: var(--lp-font-display);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all var(--lp-dur-fast) var(--lp-ease);
+  width: 100%;
+}
+.lp-par__add:hover {
+  border-color: var(--lp-ink);
+  border-style: solid;
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+}
+.lp-par__add svg { width: 16px; height: 16px; }
+
+/* Responsive pares en móvil */
+@media (max-width: 480px) {
+  .lp-par { padding: 12px 14px; }
+  .lp-par__head { gap: 10px; margin-bottom: 10px; padding-bottom: 10px; }
+  .lp-par__num { width: 24px; height: 24px; font-size: 0.78rem; }
+  .lp-par__info b { font-size: 0.88rem; }
+  .lp-par__row { gap: 10px; }
+  .lp-par__row-label { width: 42px; font-size: 0.68rem; }
+  .lp-par__color { width: 20px; height: 20px; }
+  .lp-par__tallas .lp-talla { min-width: 34px; padding: 6px 8px; font-size: 0.75rem; }
+}
+
+/* =====================================================================
+   DARK MODE — Tokens invertidos + overrides por elemento
+   El logo se invierte con filter (no existe archivo logo-brahma-dark.png)
+   ===================================================================== */
+.lp-dark-mode {
+  --lp-bone: #0e0e10;
+  --lp-bone-2: #1a1a1d;
+  --lp-paper: #161618;
+  --lp-ink: #f5f2ec;
+  --lp-ink-2: #e0ddd5;
+  --lp-stone: #9a9388;
+  --lp-stone-2: #6e685f;
+  --lp-line: #2a2a2e;
+  --lp-line-2: #38383d;
+  --lp-white: #1a1a1d;
+}
+
+/* Base: forzar fondo oscuro y texto claro en toda la landing */
+.lp-dark-mode .lp-root,
+.lp-dark-mode.lp-root {
+  background: var(--lp-bone);
+  color: var(--lp-ink);
+}
+.lp-dark-mode .lp-root h1,
+.lp-dark-mode .lp-root h2,
+.lp-dark-mode .lp-root h3,
+.lp-dark-mode .lp-root h4 {
+  color: #fff;
+}
+.lp-dark-mode .lp-root p { color: var(--lp-ink-2); }
+.lp-dark-mode .lp-root a { color: inherit; }
+
+/* Header */
+.lp-dark-mode .lp-header.is-scrolled {
+  background: rgba(14, 14, 16, 0.72);
+  border-bottom-color: var(--lp-line);
+}
+.lp-dark-mode .lp-nav a { color: var(--lp-ink-2); }
+.lp-dark-mode .lp-nav a::after { background: var(--lp-ink); }
+.lp-dark-mode .lp-nav a:hover { color: #fff; }
+.lp-dark-mode .lp-menu-btn {
+  background: var(--lp-paper);
+  border-color: var(--lp-line-2);
+}
+.lp-dark-mode .lp-menu-btn span,
+.lp-dark-mode .lp-menu-btn span::before,
+.lp-dark-mode .lp-menu-btn span::after { background: var(--lp-ink); }
+.lp-dark-mode .lp-theme-toggle {
+  background: var(--lp-paper);
+  border-color: var(--lp-line-2);
+  color: var(--lp-ink);
+}
+
+/* Mobile menu */
+.lp-dark-mode .lp-mobile-menu {
+  background: var(--lp-bone);
+  border-bottom-color: var(--lp-line);
+}
+.lp-dark-mode .lp-mobile-menu a { color: #fff; border-bottom-color: var(--lp-line); }
+
+/* Urgency strip — texto blanco forzado */
+.lp-dark-mode .lp-urgency { background: #000; color: #fff; }
+.lp-dark-mode .lp-urgency b { color: var(--lp-amber); }
+
+/* Carriers */
+.lp-dark-mode .lp-carriers {
+  background: var(--lp-paper);
+  border-bottom-color: var(--lp-line);
+}
+.lp-dark-mode .lp-carriers__label { color: var(--lp-stone); border-right-color: var(--lp-line); }
+.lp-dark-mode .lp-carriers__label b { color: #fff; }
+.lp-dark-mode .lp-carriers__label svg { color: var(--lp-amber); }
+.lp-dark-mode .lp-carriers__group img { opacity: 0.85; filter: brightness(0) invert(1) grayscale(0.3); }
+
+/* Hero PDP */
+.lp-dark-mode .lp-pdp__bg {
+  background:
+    radial-gradient(900px 600px at 85% 10%, rgba(224,163,62,0.10), transparent 60%),
+    linear-gradient(180deg, var(--lp-paper) 0%, var(--lp-bone) 100%);
+}
+.lp-dark-mode .lp-pdp__stage { background: var(--lp-bone-2); }
+.lp-dark-mode .lp-pdp__badge-discount { background: var(--lp-amber); color: #000; }
+/* Personas viendo — texto blanco forzado */
+.lp-dark-mode .lp-pdp__views {
+  background: rgba(0,0,0,0.85);
+  color: #fff;
+}
+.lp-dark-mode .lp-pdp__crumb { color: var(--lp-stone); }
+.lp-dark-mode .lp-pdp__crumb b { color: var(--lp-amber); }
+.lp-dark-mode .lp-pdp__title { color: #fff; }
+.lp-dark-mode .lp-pdp__hook-sub { color: var(--lp-stone); }
+.lp-dark-mode .lp-pdp__hook-sub em { color: var(--lp-amber); }
+.lp-dark-mode .lp-pdp__subtitle { color: var(--lp-stone); }
+.lp-dark-mode .lp-pdp__rating { border-bottom-color: var(--lp-line); }
+.lp-dark-mode .lp-pdp__rating-count { color: var(--lp-stone); }
+.lp-dark-mode .lp-pdp__price-now { color: #fff; }
+.lp-dark-mode .lp-pdp__price-old { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-pdp__tax { color: var(--lp-stone); }
+.lp-dark-mode .lp-pdp__tax b { color: var(--lp-success); }
+.lp-dark-mode .lp-variant__label b { color: #fff; }
+.lp-dark-mode .lp-variant__label span { color: var(--lp-ink-2); }
+
+/* Color buttons */
+.lp-dark-mode .lp-color-btn { background: var(--lp-paper); border-color: var(--lp-line-2); }
+.lp-dark-mode .lp-color-btn.is-active { border-color: var(--lp-ink); }
+
+/* Tallas */
+.lp-dark-mode .lp-talla {
+  background: var(--lp-white);
+  border-color: var(--lp-line-2);
+  color: var(--lp-ink);
+}
+.lp-dark-mode .lp-talla:hover { border-color: var(--lp-ink); }
+.lp-dark-mode .lp-talla.is-active { background: var(--lp-ink); color: var(--lp-bone); border-color: var(--lp-ink); }
+
+/* Tier selector — texto blanco cuando está activo */
+.lp-dark-mode .lp-tier {
+  background: var(--lp-white);
+  border-color: var(--lp-line-2);
+}
+.lp-dark-mode .lp-tier:hover { border-color: var(--lp-ink); }
+.lp-dark-mode .lp-tier.is-active {
+  background: var(--lp-ink);
+  color: #fff;
+  border-color: var(--lp-ink);
+}
+.lp-dark-mode .lp-tier__radio { background: var(--lp-white); border-color: var(--lp-line-2); }
+.lp-dark-mode .lp-tier__save { color: var(--lp-amber); background: rgba(224,163,62,0.16); }
+.lp-dark-mode .lp-tier.is-active .lp-tier__save { color: #000; background: var(--lp-amber); }
+
+/* Pares dinámicos */
+.lp-dark-mode .lp-par {
+  background: var(--lp-paper);
+  border-color: var(--lp-line-2);
+}
+.lp-dark-mode .lp-par:hover { border-color: var(--lp-ink); }
+.lp-dark-mode .lp-par__head { border-bottom-color: var(--lp-line); }
+.lp-dark-mode .lp-par__num { background: var(--lp-ink); color: var(--lp-bone); }
+.lp-dark-mode .lp-par__info b { color: #fff; }
+.lp-dark-mode .lp-par__info small { color: var(--lp-stone); }
+.lp-dark-mode .lp-par__remove { background: var(--lp-bone-2); color: var(--lp-stone); }
+.lp-dark-mode .lp-par__remove:hover { background: #c0392b; color: #fff; }
+.lp-dark-mode .lp-par__row-label { color: var(--lp-stone); }
+.lp-dark-mode .lp-par__color.is-active { border-color: var(--lp-ink); }
+.lp-dark-mode .lp-par__add {
+  border-color: var(--lp-line-2);
+  color: var(--lp-ink-2);
+}
+.lp-dark-mode .lp-par__add:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+  border-color: var(--lp-ink);
+}
+
+/* Stock bar */
+.lp-dark-mode .lp-pdp__stock {
+  background: rgba(224,163,62,0.10);
+  border-color: rgba(224,163,62,0.3);
+}
+.lp-dark-mode .lp-pdp__stock-row b { color: var(--lp-amber); }
+
+/* Trust items */
+.lp-dark-mode .lp-pdp__trust { border-top-color: var(--lp-line); }
+.lp-dark-mode .lp-pdp__trust-item svg { color: var(--lp-ink); }
+.lp-dark-mode .lp-pdp__trust-item small { color: var(--lp-stone); }
+
+/* Secciones paper */
+.lp-dark-mode .lp-section--paper { background: var(--lp-paper); }
+.lp-dark-mode .lp-section-head p { color: var(--lp-stone); }
+.lp-dark-mode .lp-eyebrow { color: var(--lp-amber); }
+
+/* 3 Pasos */
+.lp-dark-mode .lp-step__num { background: var(--lp-paper); border-color: var(--lp-ink); color: var(--lp-ink); }
+.lp-dark-mode .lp-step:hover .lp-step__num { background: var(--lp-ink); color: var(--lp-bone); }
+.lp-dark-mode .lp-step p { color: var(--lp-stone); }
+
+/* Beneficios */
+.lp-dark-mode .lp-benefit {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-benefit__icon { background: var(--lp-ink); color: var(--lp-bone); }
+.lp-dark-mode .lp-benefit p { color: var(--lp-stone); }
+
+/* BTS — captions blanco forzado */
+.lp-dark-mode .lp-bts__video { background: #000; }
+.lp-dark-mode .lp-bts__caption {
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+}
+.lp-dark-mode .lp-bts__photo { background: var(--lp-bone-2); }
+.lp-dark-mode .lp-bts__photo-cap {
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+}
+.lp-dark-mode .lp-bts__stats {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-bts__stat b { color: #fff; }
+.lp-dark-mode .lp-bts__stat span { color: var(--lp-stone); }
+
+/* Testimonios WhatsApp */
+.lp-dark-mode .lp-wa {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-wa__footer { background: var(--lp-paper); }
+.lp-dark-mode .lp-wa__who { color: var(--lp-stone); }
+.lp-dark-mode .lp-wa__who b { color: #fff; }
+.lp-dark-mode .lp-stat__label { color: var(--lp-stone); }
+.lp-dark-mode .lp-stat__num { color: #fff; }
+
+/* Stats */
+.lp-dark-mode .lp-stats { color: var(--lp-ink-2); }
+
+/* Oferta — fondo negro, textos blancos */
+.lp-dark-mode .lp-offer { background: #000; color: #fff; }
+.lp-dark-mode .lp-offer h2 { color: #fff; }
+.lp-dark-mode .lp-offer__sub { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-countdown__unit {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.12);
+}
+.lp-dark-mode .lp-countdown__num { color: #fff; }
+.lp-dark-mode .lp-countdown__label { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-offer__price .lp-price__old { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-offer__price .lp-price__now { color: #fff; }
+
+/* Garantía */
+.lp-dark-mode .lp-guarantee {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-guarantee__seal { border-color: var(--lp-amber); }
+.lp-dark-mode .lp-guarantee__seal::before { border-color: var(--lp-line); }
+.lp-dark-mode .lp-guarantee__seal svg { color: var(--lp-amber); }
+.lp-dark-mode .lp-guarantee p { color: var(--lp-stone); }
+
+/* FAQ */
+.lp-dark-mode .lp-faq__item { border-bottom-color: var(--lp-line); }
+.lp-dark-mode .lp-faq__q { color: #fff; }
+.lp-dark-mode .lp-faq__q:hover { color: var(--lp-amber); }
+.lp-dark-mode .lp-faq__icon { border-color: var(--lp-line-2); }
+.lp-dark-mode .lp-faq__icon::before,
+.lp-dark-mode .lp-faq__icon::after { background: var(--lp-ink); }
+.lp-dark-mode .lp-faq__item.is-open .lp-faq__icon { background: var(--lp-ink); border-color: var(--lp-ink); }
+.lp-dark-mode .lp-faq__item.is-open .lp-faq__icon::before,
+.lp-dark-mode .lp-faq__item.is-open .lp-faq__icon::after { background: var(--lp-bone); }
+.lp-dark-mode .lp-faq__a-inner { color: var(--lp-stone); }
+
+/* FOMO — títulos blancos forzados */
+.lp-dark-mode .lp-fomo { background: #000; color: #fff; }
+.lp-dark-mode .lp-fomo__title { color: #fff; }
+.lp-dark-mode .lp-fomo__head { border-bottom-color: rgba(255,255,255,0.1); }
+.lp-dark-mode .lp-fomo__countdown-inline { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-fomo__countdown-inline b { color: var(--lp-amber); }
+.lp-dark-mode .lp-fomo__item {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.08);
+}
+.lp-dark-mode .lp-fomo__item b { color: #fff; }
+.lp-dark-mode .lp-fomo__item p { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-fomo__vs { background: rgba(255,255,255,0.04); }
+.lp-dark-mode .lp-fomo__vs-label { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-fomo__vs-price { color: #fff; }
+.lp-dark-mode .lp-fomo__vs-col--win .lp-fomo__vs-price { color: var(--lp-amber); }
+.lp-dark-mode .lp-fomo__vs-col small { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-fomo__warn { color: var(--lp-amber); }
+
+/* Formulario */
+.lp-dark-mode .lp-form-summary__price {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-form-summary__price .lp-row { color: var(--lp-stone); }
+.lp-dark-mode .lp-form-summary__price .lp-row--total { border-top-color: var(--lp-line); color: #fff; }
+.lp-dark-mode .lp-form-summary p { color: var(--lp-stone); }
+.lp-dark-mode .lp-form-summary__list svg { color: var(--lp-success); }
+
+.lp-dark-mode .lp-form {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-form__title { color: #fff; }
+.lp-dark-mode .lp-form__sub { color: var(--lp-stone); }
+.lp-dark-mode .lp-field label { color: #fff; }
+.lp-dark-mode .lp-input,
+.lp-dark-mode .lp-select,
+.lp-dark-mode .lp-textarea {
+  background: var(--lp-white);
+  border-color: var(--lp-line-2);
+  color: var(--lp-ink);
+}
+.lp-dark-mode .lp-input::placeholder,
+.lp-dark-mode .lp-select::placeholder,
+.lp-dark-mode .lp-textarea::placeholder {
+  color: var(--lp-stone-2);
+  opacity: 0.7;
+}
+.lp-dark-mode .lp-input:focus,
+.lp-dark-mode .lp-select:focus,
+.lp-dark-mode .lp-textarea:focus {
+  border-color: var(--lp-ink);
+  box-shadow: 0 0 0 4px rgba(245,242,236,0.06);
+}
+.lp-dark-mode .lp-form__secure { color: var(--lp-stone); }
+.lp-dark-mode .lp-form__secure svg { color: var(--lp-success); }
+.lp-dark-mode .lp-form__note {
+  background: rgba(224,163,62,0.10);
+  border-color: rgba(224,163,62,0.3);
+  color: var(--lp-amber);
+}
+
+/* Footer — blanco forzado */
+.lp-dark-mode .lp-footer { background: #000; color: var(--lp-stone-2); }
+.lp-dark-mode .lp-footer__top { border-bottom-color: rgba(255,255,255,0.1); }
+.lp-dark-mode .lp-footer__brand p { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-footer__col h4 { color: #fff; }
+.lp-dark-mode .lp-footer__col a { color: var(--lp-stone-2); }
+.lp-dark-mode .lp-footer__col a:hover { color: #fff; }
+.lp-dark-mode .lp-footer__pay span {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.1);
+}
+
+/* Sticky CTA + buy bar */
+.lp-dark-mode .lp-sticky-cta {
+  background: rgba(22, 22, 24, 0.92);
+  border-top-color: var(--lp-line);
+}
+.lp-dark-mode .lp-sticky-cta__price { color: #fff; }
+.lp-dark-mode .lp-sticky-cta__price small { color: var(--lp-stone); }
+.lp-dark-mode .lp-sticky-cta__sub { color: var(--lp-stone); }
+.lp-dark-mode .lp-buy-bar { background: #000; color: #fff; }
+.lp-dark-mode .lp-buy-bar__price { color: #fff; }
+.lp-dark-mode .lp-buy-bar__price small { color: var(--lp-stone-2); }
+
+/* Toast + purchase notifications */
+.lp-dark-mode .lp-toast { background: #000; color: #fff; border: 1px solid var(--lp-line); }
+.lp-dark-mode .lp-pn {
+  background: var(--lp-paper);
+  border-color: var(--lp-line);
+}
+.lp-dark-mode .lp-pn__title { color: #fff; }
+.lp-dark-mode .lp-pn__title b { color: #fff; }
+.lp-dark-mode .lp-pn__meta { color: var(--lp-stone); }
+.lp-dark-mode .lp-pn__close { background: var(--lp-bone-2); color: var(--lp-stone); }
+
+/* Comparativa */
+.lp-dark-mode .lp-compare__col--us { background: #000; color: #fff; }
+.lp-dark-mode .lp-compare__col--them { background: var(--lp-paper); border-color: var(--lp-line); }
+.lp-dark-mode .lp-compare__col--them h3 { color: var(--lp-stone); }
+.lp-dark-mode .lp-compare__col--them .lp-compare__row { color: var(--lp-stone); }
+
+/* Botones en dark mode */
+.lp-dark-mode .lp-btn--ghost {
+  background: transparent;
+  color: var(--lp-ink);
+  border-color: var(--lp-line-2);
+}
+.lp-dark-mode .lp-btn--ghost:hover {
+  background: var(--lp-ink);
+  color: var(--lp-bone);
+  border-color: var(--lp-ink);
+}
+.lp-dark-mode .lp-btn--light {
+  background: var(--lp-bone);
+  color: var(--lp-ink);
+}
+.lp-dark-mode .lp-pill {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--lp-line);
+  color: var(--lp-ink);
+}
+
+/* Scrollbar */
+.lp-dark-mode ::-webkit-scrollbar-thumb { background: var(--lp-line-2); border-color: var(--lp-bone); }
+.lp-dark-mode ::selection { background: var(--lp-ink); color: var(--lp-bone); }
+
+/* Cursor */
+.lp-dark-mode .lp-cursor { background: var(--lp-ink); }
+.lp-dark-mode .lp-cursor-ring { border-color: var(--lp-ink); }
+
+/* ---------- Logo en dark mode ----------
+   El archivo logo-brahma-dark.png no existe en el proyecto,
+   así que invertimos el logo existente con filter para hacerlo blanco.
+   Esto logra el mismo efecto visual: logo claro sobre fondo oscuro. */
+.lp-dark-mode .lp-brand__logo {
+  filter: brightness(0) invert(1);
+}
+.lp-dark-mode .lp-brand--footer .lp-brand__logo {
+  filter: brightness(0) invert(1);
+}

@@ -1,0 +1,1342 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→/* =====================================================================
+     4→     4→   BRAHMA — Landing Premium v2 (PDP-style + 3 testimonios WhatsApp)
+     5→     5→   Orden CRO: Hero PDP → 3 Pasos → Beneficios → Testimonios WhatsApp
+     6→     6→              → Oferta → Garantía → FAQ → Formulario
+     7→     7→   ===================================================================== */
+     8→     8→
+     9→     9→import { useEffect, useRef, useState, useCallback } from "react";
+    10→    10→import "./landing.css";
+    11→    11→import { trackMeta } from "@/lib/pixel";
+    12→    12→
+    13→    13→/* ------------------------------------------------------------------ */
+    14→    14→/*  DATOS                                                              */
+    15→    15→/* ------------------------------------------------------------------ */
+    16→    16→
+    17→    17→type Colorway = { id: string; label: string; img: string; swatch: string; hex: string };
+    18→    18→
+    19→    19→const COLORWAYS: Colorway[] = [
+    20→    20→  { id: "beige", label: "Arena", img: "/images/combo-beige.jpg", swatch: "beige", hex: "#cdb89a" },
+    21→    21→  { id: "brown", label: "Café", img: "/images/combo-brown.jpg", swatch: "brown", hex: "#6b4a2e" },
+    22→    22→  { id: "olive", label: "Verde Militar", img: "/images/combo-olive.jpg", swatch: "olive", hex: "#5a5a32" },
+    23→    23→  { id: "blue", label: "Azul Noche", img: "/images/combo-blue.jpg", swatch: "blue", hex: "#3a4a63" },
+    24→    24→  { id: "black", label: "Negro", img: "/images/combo-black.jpg", swatch: "black", hex: "#1a1a1c" },
+    25→    25→];
+    26→    26→
+    27→    27→const PRICE_OLD = 179900;
+    28→    28→const PRICE_NOW = 149900;
+    29→    29→const SAVED = PRICE_OLD - PRICE_NOW; // $30.000
+    30→    30→const TALLAS = ["35", "36", "37", "38", "39", "40", "41", "42", "43"];
+    31→    31→
+    32→    32→/* Tiers de compra familiar — activa cerebro reptiliano (provisión + regalo) */
+    33→    33→type Tier = {
+    34→    34→  id: number;
+    35→    35→  qty: number;
+    36→    36→  unitPrice: number;
+    37→    37→  label: string;
+    38→    38→  for: string;
+    39→    39→  badge?: string;
+    40→    40→  badgeKind?: "popular" | "best";
+    41→    41→};
+    42→    42→const TIERS: Tier[] = [
+    43→    43→  { id: 1, qty: 1, unitPrice: 149900, label: "1 Combo", for: "Para ti" },
+    44→    44→  { id: 2, qty: 2, unitPrice: 139900, label: "2 Combos", for: "Para ti y tu pareja", badge: "🔥 Más popular", badgeKind: "popular" },
+    45→    45→  { id: 3, qty: 3, unitPrice: 129900, label: "3 Combos", for: "Para toda la familia", badge: "⭐ Mejor valor", badgeKind: "best" },
+    46→    46→];
+    47→    47→
+    48→    48→const BENEFITS = [
+    49→    49→  { title: "Material durable", desc: "Sintético de alta calidad que resiste el uso diario sin desgaste.", icon: "gem" },
+    50→    50→  { title: "Suela con agarre", desc: "Suela robusta tipo trekking, ideal para caminar todo el día.", icon: "layers" },
+    51→    51→  { title: "Detalles en contraste", desc: "Costuras y acabados que elevan el diseño al siguiente nivel.", icon: "sparkle" },
+    52→    52→  { title: "Confort todo el día", desc: "Plantilla acolchada para uso prolongado sin molestias.", icon: "heart" },
+    53→    53→  { title: "Gorra bordada de regalo", desc: "Gorra BRAHMA en drill bordada, incluida sin costo extra.", icon: "crown" },
+    54→    54→  { title: "Estilo versátil", desc: "Combina con cualquier outfit urbano o casual.", icon: "bolt" },
+    55→    55→];
+    56→    56→
+    57→    57→const STEPS = [
+    58→    58→  { num: "1", title: "Elige color y talla", desc: "Selecciona la combinación que más te guste entre 5 colores disponibles." },
+    59→    59→  { num: "2", title: "Confirma tu pedido", desc: "Llena tus datos y paga contraentrega cuando recibas tu combo en la puerta de tu casa." },
+    60→    60→  { num: "3", title: "Disfruta tu combo", desc: "Recibe tu calzado BRAHMA junto con tu gorra bordada, lista para usar." },
+    61→    61→];
+    62→    62→
+    63→    63→const WA_TESTIMONIALS = [
+    64→    64→  {
+    65→    65→    name: "Juliana P.",
+    66→    66→    initials: "JP",
+    67→    67→    photo: "/images/wa-juliana.png",
+    68→    68→    photoCaption: "Combo Azul Noche",
+    69→    69→    message: "Le regalé las Brahma a mi novio y casi llora de la emoción jaja 😂🎁 Dice que son las zapatillas más cómodas que ha tenido. La suela gruesa le da altura y el azul marino combina con todo. ¡Qué buena compra, gracias!! 💙👟",
+    70→    70→    time: "5:30 PM",
+    71→    71→    stars: 5,
+    72→    72→    city: "Bogotá",
+    73→    73→  },
+    74→    74→  {
+    75→    75→    name: "Nicolás R.",
+    76→    76→    initials: "NR",
+    77→    77→    photo: "/images/wa-nicolas.png",
+    78→    78→    photoCaption: "Combo Negro",
+    79→    79→    message: "Parcero el combo negro es una OBRA DE ARTE ❤️🔥 Todo negro con el acabado en blanco del bordado es un detalle de lujo. Las zapatillas se sienten sólidas y livianas al mismo tiempo, y la gorra es de muy buena tela. No esperaba que la gorra viniera incluida 💙💯",
+    80→    80→    time: "5:10 PM",
+    81→    81→    stars: 5,
+    82→    82→    city: "Medellín",
+    83→    83→  },
+    84→    84→  {
+    85→    85→    name: "Mauricio V.",
+    86→    86→    initials: "MV",
+    87→    87→    photo: "/images/wa-mauricio.png",
+    88→    88→    photoCaption: "Combo Azul",
+    89→    89→    message: "Llevo 3 meses usándolas para trabajar y están como nuevas 🤔🔥 No se ha gastado la suela, no se han destenido y la tela sigue intacta. Eso es calidad real, no porquerías. Ya voy a pedir otro par de respaldo 💪",
+    90→    90→    time: "9:15 PM",
+    91→    91→    stars: 5,
+    92→    92→    city: "Cali",
+    93→    93→  },
+    94→    94→];
+    95→    95→
+    96→    96→const FAQS = [
+    97→    97→  { q: "¿La gorra realmente es gratis?", a: "Sí, la gorra BRAHMA en drill bordada va incluida sin costo adicional con la compra de tu combo. No es un complemento aparte, viene en la misma caja." },
+    98→    98→  { q: "¿Cómo funciona el Pago Contra Entrega?", a: "Es simple: dejas tus datos en el formulario, confirmamos tu pedido por WhatsApp y lo despachamos. Pagas en efectivo al mensajero cuando recibas el combo en tu puerta. Cero pago anticipado, cero riesgo." },
+    99→    99→  { q: "¿Qué tallas manejan?", a: "Manejamos tallas desde la 35 hasta la 43. Si tienes dudas sobre cuál elegir, escríbenos por WhatsApp antes de confirmar tu pedido y te asesoramos." },
+   100→   100→  { q: "¿Hacen envíos a toda Colombia?", a: "Sí, despachamos desde Cúcuta a nivel nacional a través de transportadoras certificadas (Envía, Coordinadora, Inter Rapidísimo, TCC). El envío es 100% gratis. No hacemos envíos a San Andrés Islas ni a Amazonas." },
+   101→   101→  { q: "¿Cuánto tarda en llegar mi pedido?", a: "Despachamos desde Cúcuta en 24 horas hábiles. Las entregas llegan en 24 a 48 horas dependiendo de la distancia: Bogotá, Medellín, Cali y Bucaramanga suelen recibir al día siguiente; ciudades más lejanas en 3-5 días hábiles." },
+   102→   102→  { q: "¿Qué pasa si la talla no me queda bien?", a: "Tienes derecho a cambio de talla siguiendo nuestra política. Contáctanos apenas recibas tu pedido y lo solucionamos. Tu satisfacción es la única condición." },
+   103→   103→  { q: "¿Puedo pagar con tarjeta o transferencia?", a: "El método principal es Contra Entrega en efectivo. Si prefieres tarjeta o transferencia (con descuento adicional), escríbenos por WhatsApp." },
+   104→   104→  { q: "¿El combo incluye tenis y gorra?", a: "Sí. El combo incluye un par de tenis urbanos BRAHMA + una gorra premium bordada, en el color que elijas. Todo por el precio promocional." },
+   105→   105→];
+   106→   106→
+   107→   107→const CITIES = [
+   108→   108→  "Bogotá", "Medellín", "Cali", "Barranquilla", "Cartagena",
+   109→   109→  "Bucaramanga", "Pereira", "Manizales", "Cúcuta", "Santa Marta",
+   110→   110→  "Ibagué", "Villavicencio", "Armenia", "Neiva", "Pasto", "Valledupar",
+   111→   111→];
+   112→   112→
+   113→   113→/* Notificaciones de compra flotantes — prueba social en tiempo real */
+   114→   114→const BUYER_NAMES = [
+   115→   115→  "Andrés G.", "Valentina R.", "Sebastián M.", "Camila T.", "David R.",
+   116→   116→  "Mariana L.", "Juan P.", "Laura G.", "Carlos A.", "Daniela S.",
+   117→   117→  "Felipe O.", "Sara M.", "Nicolás R.", "Isabella C.", "Mateo V.",
+   118→   118→  "Gabriela F.", "Santiago H.", "Paula N.", "Tomás B.", "Manuela Q.",
+   119→   119→];
+   120→   120→const BUYER_CITIES = CITIES; // ciudades donde sí hay envío (sin San Andrés ni Amazonas)
+   121→   121→const BUYER_COLORS = ["Arena", "Café", "Verde Militar", "Azul Noche", "Negro"];
+   122→   122→
+   123→   123→/* 5 hooks de transformación — psicología neuromarketing, rotan cada 8-10s */
+   124→   124→const HERO_HOOKS = [
+   125→   125→  "El combo que cambia tu presencia en la calle.",
+   126→   126→  "Deja de parecer uno más. Empieza a destacar hoy.",
+   127→   127→  "No son tenis. Es la primera impresión que dejas.",
+   128→   128→  "Quien los usa no pasa desapercibido. Tú decides.",
+   129→   129→  "El detalle que separa al que llama la atención del que se pierde.",
+   130→   130→];
+   131→   131→
+   132→   132→/* ------------------------------------------------------------------ */
+   133→   133→/*  ICONOS SVG                                                         */
+   134→   134→/* ------------------------------------------------------------------ */
+   135→   135→
+   136→   136→const Icon = ({ name, ...props }: { name: string } & React.SVGProps<SVGSVGElement>) => {
+   137→   137→  const paths: Record<string, React.ReactNode> = {
+   138→   138→    cash: <path d="M2 7h20v10H2V7zm10 2a3 3 0 100 4 3 3 0 000-4z" />,
+   139→   139→    truck: <path d="M3 6h11v9H3V6zm11 3h4l3 3v3h-7V9zM7 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm10 0a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />,
+   140→   140→    shield: <path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3zm-1 13l5-5-1.4-1.4L11 12.2 8.4 9.6 7 11l4 4z" />,
+   141→   141→    gem: <path d="M6 3h12l3 5-9 13L3 8l3-5zm1.5 2L6 7.5h12L16.5 5h-9zM7.2 9.5L12 16l4.8-6.5H7.2z" />,
+   142→   142→    layers: <path d="M12 2l10 5-10 5L2 7l10-5zm10 9l-10 5-10-5 2-1 8 4 8-4 2 1zm-10 7l-8-4-2 1 10 5 10-5-2-1-8 4z" />,
+   143→   143→    crown: <path d="M2 18h20l-1-11-6 4-3-7-3 7-6-4-1 11zm0 2h20v2H2v-2z" />,
+   144→   144→    check: <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />,
+   145→   145→    x: <path d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7l1.4-1.4L10.6 10.6l6.3-6.3 1.4 1.4z" />,
+   146→   146→    play: <path d="M8 5v14l11-7L8 5z" />,
+   147→   147→    chevL: <path d="M15 6l-6 6 6 6V6z" />,
+   148→   148→    chevR: <path d="M9 6l6 6-6 6V6z" />,
+   149→   149→    plus: <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" />,
+   150→   150→    minus: <path d="M5 11h14v2H5v-2z" />,
+   151→   151→    lock: <path d="M6 10V8a6 6 0 1112 0v2h1a1 1 0 011 1v9a1 1 0 01-1 1H5a1 1 0 01-1-1v-9a1 1 0 011-1h1zm2 0h8V8a4 4 0 10-8 0v2z" />,
+   152→   152→    star: <path d="M12 2l3 6.5 7 .9-5 4.8 1.3 7L12 18l-6.3 3.2L7 14.2 2 9.4l7-.9L12 2z" />,
+   153→   153→    location: <path d="M12 2a7 7 0 00-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 00-7-7zm0 9.5A2.5 2.5 0 1112 6.5a2.5 2.5 0 010 5z" />,
+   154→   154→    whatsapp: <path d="M12 2a10 10 0 00-8.5 15.2L2 22l4.9-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.2-.7-2.7-1.1-4.4-3.8-4.5-4-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9.9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.5c-.2.2-.3.3-.1.6.2.3.8 1.2 1.7 2 .9.7 1.6.9 1.9 1 .2 0 .4 0 .5-.1l.7-.8c.2-.2.4-.2.6-.1l1.8.9c.3.1.4.2.5.3 0 .2 0 .7-.3 1.2z" />,
+   155→   155→    bolt: <path d="M11 21l8-12h-5l2-8-8 12h5l-2 8z" />,
+   156→   156→    arrowR: <path d="M4 11h12.2l-4.6-4.6L13 5l7 7-7 7-1.4-1.4L16.2 13H4v-2z" />,
+   157→   157→    sparkle: <path d="M12 2l1.8 6.2L20 10l-6.2 1.8L12 18l-1.8-6.2L4 10l6.2-1.8L12 2z" />,
+   158→   158→    heart: <path d="M12 21l-1.5-1.4C5 14.8 2 12 2 8.5A4.5 4.5 0 016.5 4c1.5 0 3 .7 4 2 1-1.3 2.5-2 4-2A4.5 4.5 0 0119 8.5c0 3.5-3 6.3-8.5 11.1L12 21z" />,
+   159→   159→    refresh: <path d="M12 5V2L7 7l5 5V8a5 5 0 11-5 5H5a7 7 0 107-8z" />,
+   160→   160→    clock: <path d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 10.6l4 2.3-1 1.7-5-2.9V6h2v6.6z" />,
+   161→   161→    checkDouble: <path d="M18 7l-9 9-4-4-1.4 1.4L9 19l10.4-10.6L18 7zm-3.6 0L9 12.4 7.6 11 6.2 12.4l2.8 2.8 7.8-7.8L14.4 7z" />,
+   162→   162→    fire: <path d="M13 1c1 3-1 5-2.5 6.5C9 9 8 10.5 8 13a4 4 0 008 0c0-2-1-3.5-2-5 .5 2-.5 3-1.5 3 1.5-3-.5-7-3-10 .5 4-3 5-3 9a6 6 0 0012 0c0-4-2-7-5-9z" />,
+   163→   163→    bag: <path d="M6 8h12l1 13H5L6 8zm3-2a3 3 0 016 0v2h-2V6a1 1 0 10-2 0v2H9V6z" />,
+   164→   164→  };
+   165→   165→  return (
+   166→   166→    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+   167→   167→      {paths[name]}
+   168→   168→    </svg>
+   169→   169→  );
+   170→   170→};
+   171→   171→
+   172→   172→const formatCOP = (n: number) => "$" + n.toLocaleString("es-CO");
+   173→   173→
+   174→   174→/* ------------------------------------------------------------------ */
+   175→   175→/*  COMPONENTE PRINCIPAL                                               */
+   176→   176→/* ------------------------------------------------------------------ */
+   177→   177→
+   178→   178→export default function Home() {
+   179→   179→  const [colorway, setColorway] = useState<Colorway>(COLORWAYS[0]);
+   180→   180→  const [qty, setQty] = useState(1);
+   181→   181→  const [tier, setTier] = useState<Tier>(TIERS[0]);
+   182→   182→  const [tall, setTall] = useState("40");
+   183→   183→  const [views, setViews] = useState(() => {
+   184→   184→    // Rango inteligente según hora del día (tráfico frío realista)
+   185→   185→    const h = new Date().getHours();
+   186→   186→    if (h >= 0 && h < 6) return 18 + Math.floor(Math.random() * 12);   // Madrugada: 18-29
+   187→   187→    if (h >= 6 && h < 9) return 40 + Math.floor(Math.random() * 20);   // Mañana temprano: 40-59
+   188→   188→    if (h >= 9 && h < 12) return 65 + Math.floor(Math.random() * 20);  // Mañana: 65-84
+   189→   189→    if (h >= 12 && h < 14) return 75 + Math.floor(Math.random() * 16); // Mediodía: 75-90
+   190→   190→    if (h >= 14 && h < 18) return 80 + Math.floor(Math.random() * 21); // Tarde pico: 80-100
+   191→   191→    if (h >= 18 && h < 22) return 70 + Math.floor(Math.random() * 20); // Noche: 70-89
+   192→   192→    return 35 + Math.floor(Math.random() * 18);                         // 22-24: 35-52
+   193→   193→  });
+   194→   194→  const [hookIdx, setHookIdx] = useState(0);
+   195→   195→  const [pn, setPn] = useState<{ name: string; city: string; color: string; initials: string; mins: number; avatarColor: string } | null>(null);
+   196→   196→  const [faqOpen, setFaqOpen] = useState<number | null>(0);
+   197→   197→  const [form, setForm] = useState({ name: "", phone: "", city: "", address: "" });
+   198→   198→  const [errors, setErrors] = useState<Record<string, string>>({});
+   199→   199→  const [submitting, setSubmitting] = useState(false);
+   200→   200→  const [toast, setToast] = useState<{ msg: string; type: "success" | "error" | "info" } | null>(null);
+   201→   201→
+   202→   202→  const rootRef = useRef<HTMLDivElement>(null);
+   203→   203→  const cinemaIdxRef = useRef(0);
+   204→   204→
+   205→   205→  const showToast = useCallback((msg: string, type: "success" | "error" | "info" = "success") => {
+   206→   206→    setToast({ msg, type });
+   207→   207→    window.setTimeout(() => setToast(null), 4500);
+   208→   208→  }, []);
+   209→   209→
+   210→   210→  // Meta Pixel: ViewContent al montar (usuario vio el producto)
+   211→   211→  useEffect(() => {
+   212→   212→    trackMeta("ViewContent", {
+   213→   213→      content_name: "Combo Brahma Moster",
+   214→   214→      content_category: "Calzado",
+   215→   215→      content_ids: ["brahma-moster"],
+   216→   216→      content_type: "product",
+   217→   217→      value: 149900,
+   218→   218→      currency: "COP",
+   219→   219→    });
+   220→   220→  }, []);
+   221→   221→
+   222→   222→  const selectColorway = (cw: Colorway) => {
+   223→   223→    setColorway(cw);
+   224→   224→    setForm((f) => ({ ...f }));
+   225→   225→  };
+   226→   226→
+   227→   227→  const toggleFaq = (i: number) => setFaqOpen((p) => (p === i ? null : i));
+   228→   228→
+   229→   229→  const incQty = () => setQty((q) => Math.min(9, q + 1));
+   230→   230→  const decQty = () => setQty((q) => Math.max(1, q - 1));
+   231→   231→
+   232→   232→  const selectTier = (t: Tier) => {
+   233→   233→    setTier(t);
+   234→   234→    setQty(t.qty);
+   235→   235→  };
+   236→   236→
+   237→   237→  const validate = () => {
+   238→   238→    const e: Record<string, string> = {};
+   239→   239→    if (!form.name.trim() || form.name.trim().length < 3) e.name = "Escribe tu nombre completo";
+   240→   240→    if (!/^3\d{8,9}$/.test(form.phone.replace(/\s/g, ""))) e.phone = "Celular inválido (ej: 3001234567)";
+   241→   241→    if (!form.city.trim()) e.city = "Selecciona tu ciudad";
+   242→   242→    if (!form.address.trim() || form.address.trim().length < 6) e.address = "Escribe una dirección completa";
+   243→   243→    setErrors(e);
+   244→   244→    return Object.keys(e).length === 0;
+   245→   245→  };
+   246→   246→
+   247→   247→  const handleSubmit = async (ev: React.FormEvent) => {
+   248→   248→    ev.preventDefault();
+   249→   249→    if (!validate()) {
+   250→   250→      showToast("Revisa los campos marcados", "error");
+   251→   251→      return;
+   252→   252→    }
+   253→   253→    setSubmitting(true);
+   254→   254→
+   255→   255→    // Meta Pixel: Lead (usuario envió el formulario → conversión principal)
+   256→   256→    trackMeta("Lead", {
+   257→   257→      content_name: "Combo Brahma Moster",
+   258→   258→      content_category: "Calzado",
+   259→   259→      value: total,
+   260→   260→      currency: "COP",
+   261→   261→    });
+   262→   262→
+   263→   263→    // Construir mensaje de WhatsApp con todos los datos del pedido
+   264→   264→    const mensaje =
+   265→   265→      `🛒 *NUEVO PEDIDO - BRAHMA*\n\n` +
+   266→   266→      `👤 *Nombre:* ${form.name.trim()}\n` +
+   267→   267→      `📱 *Celular:* ${form.phone.trim()}\n` +
+   268→   268→      `🏙️ *Ciudad:* ${form.city.trim()}\n` +
+   269→   269→      `🏠 *Dirección:* ${form.address.trim()}\n\n` +
+   270→   270→      `👟 *Detalle:*\n   Color: ${colorway.label} · Talla: ${tall}\n\n` +
+   271→   271→      `📦 *Cantidad:* ${tier.qty} ${tier.qty > 1 ? "combos" : "combo"}\n` +
+   272→   272→      `💵 *Precio c/u:* ${formatCOP(tier.unitPrice)}\n` +
+   273→   273→      `💰 *Total a pagar:* ${formatCOP(total)}\n` +
+   274→   274→      `💸 *Ahorras:* ${formatCOP(tierSave)}\n\n` +
+   275→   275→      `✅ *Pago Contra Entrega*`;
+   276→   276→
+   277→   277→    const waNumber = "573228973800";
+   278→   278→    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(mensaje)}`;
+   279→   279→
+   280→   280→    showToast("Abriendo WhatsApp con tu pedido...", "success");
+   281→   281→    window.setTimeout(() => {
+   282→   282→      window.open(waUrl, "_blank");
+   283→   283→      setSubmitting(false);
+   284→   284→      setForm({ name: "", phone: "", city: "", address: "" });
+   285→   285→    }, 600);
+   286→   286→  };
+   287→   287→
+   288→   288→  const scrollToForm = (e: React.MouseEvent) => {
+   289→   289→    e.preventDefault();
+   290→   290→    // Meta Pixel: InitiateCheckout (usuario hizo clic en CTA → formulario)
+   291→   291→    trackMeta("InitiateCheckout", {
+   292→   292→      content_name: "Combo Brahma Moster",
+   293→   293→      content_ids: ["brahma-moster"],
+   294→   294→      content_type: "product",
+   295→   295→      num_items: tier.qty,
+   296→   296→      value: total,
+   297→   297→      currency: "COP",
+   298→   298→    });
+   299→   299→    const el = document.getElementById("formulario");
+   300→   300→    if (el) {
+   301→   301→      const top = el.getBoundingClientRect().top + window.scrollY - 64;
+   302→   302→      window.scrollTo({ top, behavior: "smooth" });
+   303→   303→    }
+   304→   304→  };
+   305→   305→
+   306→   306→  /* ================================================================ */
+   307→   307→  /*  EFECTOS — Lógica vanilla JS                                     */
+   308→   308→  /* ================================================================ */
+   309→   309→  useEffect(() => {
+   310→   310→    const root = rootRef.current;
+   311→   311→    if (!root) return;
+   312→   312→
+   313→   313→    const header = root.querySelector<HTMLElement>(".lp-header");
+   314→   314→    const stickyCta = root.querySelector<HTMLElement>(".lp-sticky-cta");
+   315→   315→    const buyBar = root.querySelector<HTMLElement>(".lp-buy-bar");
+   316→   316→    const formSec = root.querySelector<HTMLElement>("#formulario");
+   317→   317→
+   318→   318→    const onScroll = () => {
+   319→   319→      const y = window.scrollY;
+   320→   320→      const vh = window.innerHeight;
+   321→   321→      header?.classList.toggle("is-scrolled", y > 24);
+   322→   322→      if (stickyCta) stickyCta.classList.toggle("is-visible", y > vh * 0.85);
+   323→   323→      if (buyBar && formSec) {
+   324→   324→        const show = y > vh * 0.9 && y < formSec.offsetTop - vh * 0.8;
+   325→   325→        buyBar.classList.toggle("is-visible", show);
+   326→   326→      }
+   327→   327→    };
+   328→   328→    window.addEventListener("scroll", onScroll, { passive: true });
+   329→   329→    window.addEventListener("resize", onScroll);
+   330→   330→    window.addEventListener("load", onScroll);
+   331→   331→    onScroll();
+   332→   332→    const recalcTimer = window.setTimeout(onScroll, 700);
+   333→   333→
+   334→   334→    const onClick = (e: MouseEvent) => {
+   335→   335→      const target = e.target as HTMLElement;
+   336→   336→      const link = target.closest('a[href^="#"]') as HTMLAnchorElement | null;
+   337→   337→      if (!link) return;
+   338→   338→      const id = link.getAttribute("href");
+   339→   339→      if (!id || id === "#") return;
+   340→   340→      const el = root.querySelector(id) as HTMLElement | null;
+   341→   341→      if (el) {
+   342→   342→        e.preventDefault();
+   343→   343→        // Cerrar menú móvil y restaurar scroll ANTES de animar (overflow:hidden bloquea scrollTo)
+   344→   344→        root.querySelector(".lp-mobile-menu")?.classList.remove("is-open");
+   345→   345→        root.querySelector(".lp-mobile-scrim")?.classList.remove("is-open");
+   346→   346→        root.querySelector(".lp-menu-btn")?.classList.remove("is-open");
+   347→   347→        document.body.style.overflow = "";
+   348→   348→        const top = el.getBoundingClientRect().top + window.scrollY - 64;
+   349→   349→        window.scrollTo({ top, behavior: "smooth" });
+   350→   350→      }
+   351→   351→    };
+   352→   352→    root.addEventListener("click", onClick);
+   353→   353→
+   354→   354→    const reveals = root.querySelectorAll<HTMLElement>(".lp-reveal");
+   355→   355→    const io = new IntersectionObserver(
+   356→   356→      (entries) => {
+   357→   357→        entries.forEach((entry) => {
+   358→   358→          if (entry.isIntersecting) {
+   359→   359→            entry.target.classList.add("is-visible");
+   360→   360→            io.unobserve(entry.target);
+   361→   361→          }
+   362→   362→        });
+   363→   363→      },
+   364→   364→      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+   365→   365→    );
+   366→   366→    reveals.forEach((el) => io.observe(el));
+   367→   367→    // Check inmediato: marca como visibles los reveals que ya están en viewport
+   368→   368→    // (fix para scroll instantáneo que no dispara el observer a tiempo)
+   369→   369→    const checkVisibleNow = () => {
+   370→   370→      const vh = window.innerHeight;
+   371→   371→      reveals.forEach((el) => {
+   372→   372→        if (el.classList.contains("is-visible")) return;
+   373→   373→        const r = el.getBoundingClientRect();
+   374→   374→        if (r.top < vh && r.bottom > 0) {
+   375→   375→          el.classList.add("is-visible");
+   376→   376→          io.unobserve(el);
+   377→   377→        }
+   378→   378→      });
+   379→   379→    };
+   380→   380→    checkVisibleNow();
+   381→   381→    const revealTimer = window.setTimeout(checkVisibleNow, 300);
+   382→   382→    window.addEventListener("scroll", checkVisibleNow, { passive: true });
+   383→   383→
+   384→   384→    const counters = root.querySelectorAll<HTMLElement>("[data-count]");
+   385→   385→    const ioCount = new IntersectionObserver(
+   386→   386→      (entries) => {
+   387→   387→        entries.forEach((entry) => {
+   388→   388→          if (!entry.isIntersecting) return;
+   389→   389→          const el = entry.target as HTMLElement;
+   390→   390→          const target = parseFloat(el.dataset.count || "0");
+   391→   391→          const suffix = el.dataset.suffix || "";
+   392→   392→          const dur = 1600;
+   393→   393→          const start = performance.now();
+   394→   394→          const tick = (now: number) => {
+   395→   395→            const p = Math.min(1, (now - start) / dur);
+   396→   396→            const eased = 1 - Math.pow(1 - p, 3);
+   397→   397→            const val = target * eased;
+   398→   398→            el.textContent = (target % 1 === 0 ? Math.round(val) : val.toFixed(1)) + suffix;
+   399→   399→            if (p < 1) requestAnimationFrame(tick);
+   400→   400→          };
+   401→   401→          requestAnimationFrame(tick);
+   402→   402→          ioCount.unobserve(el);
+   403→   403→        });
+   404→   404→      },
+   405→   405→      { threshold: 0.5 }
+   406→   406→    );
+   407→   407→    counters.forEach((el) => ioCount.observe(el));
+   408→   408→
+   409→   409→    const onRipple = (e: MouseEvent) => {
+   410→   410→      const btn = (e.target as HTMLElement).closest(".lp-btn") as HTMLElement | null;
+   411→   411→      if (!btn) return;
+   412→   412→      const rect = btn.getBoundingClientRect();
+   413→   413→      const size = Math.max(rect.width, rect.height);
+   414→   414→      const ripple = document.createElement("span");
+   415→   415→      ripple.className = "lp-ripple";
+   416→   416→      ripple.style.width = ripple.style.height = size + "px";
+   417→   417→      ripple.style.left = e.clientX - rect.left - size / 2 + "px";
+   418→   418→      ripple.style.top = e.clientY - rect.top - size / 2 + "px";
+   419→   419→      btn.appendChild(ripple);
+   420→   420→      window.setTimeout(() => ripple.remove(), 700);
+   421→   421→    };
+   422→   422→    root.addEventListener("mousedown", onRipple);
+   423→   423→
+   424→   424→    const finePointer = window.matchMedia("(pointer: fine)").matches;
+   425→   425→    const magnets: HTMLElement[] = [];
+   426→   426→    if (finePointer) {
+   427→   427→      root.querySelectorAll<HTMLElement>("[data-magnetic]").forEach((el) => {
+   428→   428→        magnets.push(el);
+   429→   429→        el.addEventListener("mousemove", (e) => {
+   430→   430→          const r = el.getBoundingClientRect();
+   431→   431→          const mx = e.clientX - r.left - r.width / 2;
+   432→   432→          const my = e.clientY - r.top - r.height / 2;
+   433→   433→          el.style.transform = `translate(${mx * 0.18}px, ${my * 0.28}px)`;
+   434→   434→        });
+   435→   435→        el.addEventListener("mouseleave", () => { el.style.transform = ""; });
+   436→   436→      });
+   437→   437→    }
+   438→   438→
+   439→   439→    let cursor: HTMLElement | null = null;
+   440→   440→    let ring: HTMLElement | null = null;
+   441→   441→    if (finePointer) {
+   442→   442→      cursor = document.createElement("div");
+   443→   443→      ring = document.createElement("div");
+   444→   444→      cursor.className = "lp-cursor";
+   445→   445→      ring.className = "lp-cursor-ring";
+   446→   446→      document.body.appendChild(cursor);
+   447→   447→      document.body.appendChild(ring);
+   448→   448→      const move = (e: MouseEvent) => {
+   449→   449→        if (cursor) { cursor.style.left = e.clientX + "px"; cursor.style.top = e.clientY + "px"; }
+   450→   450→        if (ring) { ring.style.left = e.clientX + "px"; ring.style.top = e.clientY + "px"; }
+   451→   451→      };
+   452→   452→      window.addEventListener("mousemove", move);
+   453→   453→      const hoverTargets = root.querySelectorAll("a, button, .lp-pdp__stage, .lp-pdp__thumb, .lp-color-btn, .lp-talla, .lp-wa");
+   454→   454→      hoverTargets.forEach((t) => {
+   455→   455→        t.addEventListener("mouseenter", () => { cursor?.classList.add("is-hover"); ring?.classList.add("is-hover"); });
+   456→   456→        t.addEventListener("mouseleave", () => { cursor?.classList.remove("is-hover"); ring?.classList.remove("is-hover"); });
+   457→   457→      });
+   458→   458→    }
+   459→   459→
+   460→   460→    return () => {
+   461→   461→      window.removeEventListener("scroll", onScroll);
+   462→   462→      window.removeEventListener("resize", onScroll);
+   463→   463→      window.removeEventListener("load", onScroll);
+   464→   464→      window.removeEventListener("scroll", checkVisibleNow);
+   465→   465→      root.removeEventListener("click", onClick);
+   466→   466→      root.removeEventListener("mousedown", onRipple);
+   467→   467→      window.clearTimeout(recalcTimer);
+   468→   468→      window.clearTimeout(revealTimer);
+   469→   469→      io.disconnect();
+   470→   470→      ioCount.disconnect();
+   471→   471→      cursor?.remove();
+   472→   472→      ring?.remove();
+   473→   473→    };
+   474→   474→  }, []);
+   475→   475→
+   476→   476→  // Countdown timer (end of day)
+   477→   477→  useEffect(() => {
+   478→   478→    const units = document.querySelectorAll<HTMLElement>("[data-cd]");
+   479→   479→    if (!units.length) return;
+   480→   480→    const tick = () => {
+   481→   481→      const now = new Date();
+   482→   482→      const end = new Date();
+   483→   483→      end.setHours(23, 59, 59, 999);
+   484→   484→      let diff = Math.max(0, end.getTime() - now.getTime());
+   485→   485→      const h = Math.floor(diff / 3600000); diff -= h * 3600000;
+   486→   486→      const m = Math.floor(diff / 60000); diff -= m * 60000;
+   487→   487→      const s = Math.floor(diff / 1000);
+   488→   488→      const vals = [String(h).padStart(2, "0"), String(m).padStart(2, "0"), String(s).padStart(2, "0")];
+   489→   489→      units.forEach((u, i) => { if (vals[i] != null) u.textContent = vals[i]; });
+   490→   490→    };
+   491→   491→    tick();
+   492→   492→    const id = window.setInterval(tick, 1000);
+   493→   493→    return () => window.clearInterval(id);
+   494→   494→  }, []);
+   495→   495→
+   496→   496→  // Stock bar animate on view
+   497→   497→  useEffect(() => {
+   498→   498→    const bar = document.querySelector<HTMLElement>(".lp-pdp__stock-fill");
+   499→   499→    if (!bar) return;
+   500→   500→    const io = new IntersectionObserver((entries) => {
+   501→   501→      entries.forEach((e) => { if (e.isIntersecting) { bar.style.width = "22%"; io.disconnect(); } });
+   502→   502→    }, { threshold: 0.4 });
+   503→   503→    io.observe(bar);
+   504→   504→    return () => io.disconnect();
+   505→   505→  }, []);
+   506→   506→
+   507→   507→  // Contador "personas viendo" — variación inteligente según hora del día
+   508→   508→  useEffect(() => {
+   509→   509→    let active = true;
+   510→   510→    const getRange = () => {
+   511→   511→      const h = new Date().getHours();
+   512→   512→      if (h >= 0 && h < 6) return [18, 29];
+   513→   513→      if (h >= 6 && h < 9) return [40, 59];
+   514→   514→      if (h >= 9 && h < 12) return [65, 84];
+   515→   515→      if (h >= 12 && h < 14) return [75, 90];
+   516→   516→      if (h >= 14 && h < 18) return [80, 100];
+   517→   517→      if (h >= 18 && h < 22) return [70, 89];
+   518→   518→      return [35, 52];
+   519→   519→    };
+   520→   520→    const tick = () => {
+   521→   521→      if (!active) return;
+   522→   522→      setViews((prev) => {
+   523→   523→        const [min, max] = getRange();
+   524→   524→        const delta = Math.floor(Math.random() * 9) - 4; // -4..+4
+   525→   525→        let next = prev + delta;
+   526→   526→        if (next < min) next = min + Math.floor(Math.random() * 3);
+   527→   527→        if (next > max) next = max - Math.floor(Math.random() * 3);
+   528→   528→        return next;
+   529→   529→      });
+   530→   530→      window.setTimeout(tick, 8000 + Math.random() * 8000);
+   531→   531→    };
+   532→   532→    const firstTimer = window.setTimeout(tick, 6000 + Math.random() * 5000);
+   533→   533→    return () => { active = false; window.clearTimeout(firstTimer); };
+   534→   534→  }, []);
+   535→   535→
+   536→   536→  // Autoplay inteligente de videos: solo reproducen cuando son visibles
+   537→   537→  useEffect(() => {
+   538→   538→    const videos = document.querySelectorAll<HTMLVideoElement>("video[autoplay]");
+   539→   539→    if (!videos.length) return;
+   540→   540→    const io = new IntersectionObserver(
+   541→   541→      (entries) => {
+   542→   542→        entries.forEach((entry) => {
+   543→   543→          const v = entry.target as HTMLVideoElement;
+   544→   544→          if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+   545→   545→            v.play().catch(() => {});
+   546→   546→          } else {
+   547→   547→            v.pause();
+   548→   548→          }
+   549→   549→        });
+   550→   550→      },
+   551→   551→      { threshold: [0, 0.4, 0.6] }
+   552→   552→    );
+   553→   553→    videos.forEach((v) => {
+   554→   554→      v.muted = true;
+   555→   555→      io.observe(v);
+   556→   556→    });
+   557→   557→    return () => io.disconnect();
+   558→   558→  }, []);
+   559→   559→
+   560→   560→  // Rotación de hooks de transformación cada 8-10s
+   561→   561→  useEffect(() => {
+   562→   562→    let active = true;
+   563→   563→    const tick = () => {
+   564→   564→      if (!active) return;
+   565→   565→      setHookIdx((prev) => (prev + 1) % HERO_HOOKS.length);
+   566→   566→      window.setTimeout(tick, 8000 + Math.random() * 2000);
+   567→   567→    };
+   568→   568→    const firstTimer = window.setTimeout(tick, 8000 + Math.random() * 2000);
+   569→   569→    return () => { active = false; window.clearTimeout(firstTimer); };
+   570→   570→  }, []);
+   571→   571→
+   572→   572→  // Notificaciones de compra flotantes — prueba social (cada 10-20s aleatorio)
+   573→   573→  useEffect(() => {
+   574→   574→    let active = true;
+   575→   575→    let hideTimer: number;
+   576→   576→    const AVATAR_COLORS = ["#1a1a1c", "#3a4a63", "#6b4a2e", "#5a5a32", "#b87a1e"];
+   577→   577→    const showPn = () => {
+   578→   578→      if (!active) return;
+   579→   579→      const name = BUYER_NAMES[Math.floor(Math.random() * BUYER_NAMES.length)];
+   580→   580→      const city = BUYER_CITIES[Math.floor(Math.random() * BUYER_CITIES.length)];
+   581→   581→      const color = BUYER_COLORS[Math.floor(Math.random() * BUYER_COLORS.length)];
+   582→   582→      const initials = name.split(" ").map((p) => p[0]).join("").slice(0, 2);
+   583→   583→      const mins = Math.floor(Math.random() * 14) + 1; // 1-14 min
+   584→   584→      const avatarColor = AVATAR_COLORS[Math.floor(Math.random() * AVATAR_COLORS.length)];
+   585→   585→      setPn({ name, city, color, initials, mins, avatarColor });
+   586→   586→      // Ocultar después de 5-6 segundos
+   587→   587→      hideTimer = window.setTimeout(() => {
+   588→   588→        setPn(null);
+   589→   589→        // Próxima notificación en 10-20 segundos
+   590→   590→        window.setTimeout(showPn, 10000 + Math.random() * 10000);
+   591→   591→      }, 5500);
+   592→   592→    };
+   593→   593→    // Primera notificación después de 6-10 segundos
+   594→   594→    const firstTimer = window.setTimeout(showPn, 6000 + Math.random() * 4000);
+   595→   595→    return () => {
+   596→   596→      active = false;
+   597→   597→      window.clearTimeout(firstTimer);
+   598→   598→      window.clearTimeout(hideTimer);
+   599→   599→    };
+   600→   600→  }, []);
+   601→   601→
+   602→   602→  /* El total usa el precio del tier seleccionado; si el usuario modificó qty
+   603→   603→     manualmente (fuera de tiers), usa PRICE_NOW como fallback */
+   604→   604→  const total = tier.qty * tier.unitPrice;
+   605→   605→  const tierSave = (PRICE_OLD - tier.unitPrice) * tier.qty;
+   606→   606→
+   607→   607→  return (
+   608→   608→    <div className="lp-root" ref={rootRef}>
+   609→   609→      {/* ============ HEADER ============ */}
+   610→   610→      <header className="lp-header">
+   611→   611→        <div className="lp-header__inner">
+   612→   612→          <a href="#top" className="lp-brand" aria-label="BRAHMA inicio">
+   613→   613→            <img src="/images/logo-brahma.png" alt="BRAHMA" className="lp-brand__logo" />
+   614→   614→          </a>
+   615→   615→          <nav className="lp-nav" aria-label="Principal">
+   616→   616→            <a href="#beneficios">Beneficios</a>
+   617→   617→            <a href="#opiniones">Opiniones</a>
+   618→   618→            <a href="#faq">Preguntas</a>
+   619→   619→            <a href="#oferta">Oferta</a>
+   620→   620→          </nav>
+   621→   621→          <div className="lp-header__cta">
+   622→   622→            <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic>
+   623→   623→              <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar ahora
+   624→   624→            </a>
+   625→   625→          </div>
+   626→   626→          <button className="lp-menu-btn" aria-label="Menú" onClick={(e) => {
+   627→   627→            const b = e.currentTarget;
+   628→   628→            const m = document.querySelector(".lp-mobile-menu");
+   629→   629→            const s = document.querySelector(".lp-mobile-scrim");
+   630→   630→            const willOpen = !b.classList.contains("is-open");
+   631→   631→            b.classList.toggle("is-open", willOpen);
+   632→   632→            m?.classList.toggle("is-open", willOpen);
+   633→   633→            s?.classList.toggle("is-open", willOpen);
+   634→   634→            document.body.style.overflow = willOpen ? "hidden" : "";
+   635→   635→          }}><span /></button>
+   636→   636→        </div>
+   637→   637→      </header>
+   638→   638→      <div className="lp-mobile-scrim" onClick={() => {
+   639→   639→        const b = document.querySelector(".lp-menu-btn");
+   640→   640→        const m = document.querySelector(".lp-mobile-menu");
+   641→   641→        const s = document.querySelector(".lp-mobile-scrim");
+   642→   642→        b?.classList.remove("is-open");
+   643→   643→        m?.classList.remove("is-open");
+   644→   644→        s?.classList.remove("is-open");
+   645→   645→        document.body.style.overflow = "";
+   646→   646→      }} aria-hidden="true" />
+   647→   647→      <div className="lp-mobile-menu">
+   648→   648→        <a href="#beneficios">Beneficios</a>
+   649→   649→        <a href="#opiniones">Opiniones</a>
+   650→   650→        <a href="#faq">Preguntas</a>
+   651→   651→        <a href="#oferta">Oferta</a>
+   652→   652→        <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--block">Comprar ahora</a>
+   653→   653→      </div>
+   654→   654→
+   655→   655→      <main className="lp-main" id="top">
+   656→   656→
+   657→   657→        {/* ============ URGENCY STRIP ============ */}
+   658→   658→        <div className="lp-urgency">
+   659→   659→          <span className="lp-pulse-dot" />
+   660→   660→          <span><b>OFERTA TERMINA HOY</b> · Pago Contra Entrega · Envío Gratis · 🎁 Gorra bordada incluida</span>
+   661→   661→        </div>
+   662→   662→
+   663→   663→        {/* ============ CARRIERS MARQUEE ============ */}
+   664→   664→        <div className="lp-carriers">
+   665→   665→          <div className="lp-carriers__label">
+   666→   666→            <Icon name="truck" style={{ width: 14, height: 14 }} />
+   667→   667→            <span>Despachos todos los días hasta las 6 PM por:</span>
+   668→   668→          </div>
+   669→   669→          <div className="lp-carriers__track">
+   670→   670→            <div className="lp-carriers__group">
+   671→   671→              <img src="/images/carriers/envia.png" alt="Envía" />
+   672→   672→              <img src="/images/carriers/coordinadora.png" alt="Coordinadora" />
+   673→   673→              <img src="/images/carriers/interrapido.png" alt="Inter Rapidísimo" />
+   674→   674→              <img src="/images/carriers/tcc.png" alt="TCC" />
+   675→   675→            </div>
+   676→   676→            <div className="lp-carriers__group" aria-hidden="true">
+   677→   677→              <img src="/images/carriers/envia.png" alt="" />
+   678→   678→              <img src="/images/carriers/coordinadora.png" alt="" />
+   679→   679→              <img src="/images/carriers/interrapido.png" alt="" />
+   680→   680→              <img src="/images/carriers/tcc.png" alt="" />
+   681→   681→            </div>
+   682→   682→          </div>
+   683→   683→        </div>
+   684→   684→
+   685→   685→        {/* ============ HERO PDP ============ */}
+   686→   686→        <section className="lp-pdp" id="hero">
+   687→   687→          <div className="lp-pdp__bg" />
+   688→   688→          <div className="lp-container lp-pdp__grid">
+   689→   689→
+   690→   690→            {/* Gallery (left) */}
+   691→   691→            <div className="lp-pdp__gallery lp-reveal lp-reveal--scale">
+   692→   692→              <div className="lp-pdp__stage">
+   693→   693→                <img src={colorway.img} alt={`Combo BRAHMA color ${colorway.label}`} fetchPriority="high" />
+   694→   694→                <div className="lp-pdp__badge-discount">
+   695→   695→                  <small>Ahorra</small> {formatCOP(SAVED)} HOY
+   696→   696→                </div>
+   697→   697→                <div className="lp-pdp__views">
+   698→   698→                  <span className="lp-dot" /> {views} personas viendo esto
+   699→   699→                </div>
+   700→   700→              </div>
+   701→   701→              <div className="lp-pdp__thumbs">
+   702→   702→                {COLORWAYS.map((c) => (
+   703→   703→                  <button key={c.id} className={`lp-pdp__thumb ${colorway.id === c.id ? "is-active" : ""}`}
+   704→   704→                    aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
+   705→   705→                    <img src={c.img} alt="" loading="lazy" />
+   706→   706→                    <span className="lp-pdp__thumb-dot" style={{ background: c.hex }} aria-hidden="true" />
+   707→   707→                  </button>
+   708→   708→                ))}
+   709→   709→              </div>
+   710→   710→            </div>
+   711→   711→
+   712→   712→            {/* Info (right) */}
+   713→   713→            <div className="lp-pdp__info lp-reveal" data-delay="1">
+   714→   714→              <div className="lp-pdp__crumb">
+   715→   715→                <b>COMBO BRAHMA</b> · Moster Edition
+   716→   716→              </div>
+   717→   717→              <h1 className="lp-pdp__title" key={hookIdx}>
+   718→   718→                {HERO_HOOKS[hookIdx]}
+   719→   719→              </h1>
+   720→   720→              <div className="lp-pdp__hook-sub">
+   721→   721→                Combo Brahma <em>Moster</em> Zapatos + Gorra
+   722→   722→              </div>
+   723→   723→              <p className="lp-pdp__subtitle">
+   724→   724→                Estilo urbano, comodidad garantizada. Resistencia, confort y diseño moderno para cualquier ocasión.
+   725→   725→              </p>
+   726→   726→
+   727→   727→              <div className="lp-pdp__rating">
+   728→   728→                <span className="lp-pdp__stars">★★★★★</span>
+   729→   729→                <span className="lp-pdp__rating-num">4.9</span>
+   730→   730→                <span className="lp-pdp__rating-count">(2.480 reseñas)</span>
+   731→   731→                <span className="lp-pdp__rating-verified"><Icon name="check" /> Verificadas</span>
+   732→   732→              </div>
+   733→   733→
+   734→   734→              <div className="lp-pdp__price">
+   735→   735→                <span className="lp-pdp__price-now">{formatCOP(PRICE_NOW)}</span>
+   736→   736→                <span className="lp-pdp__price-old">{formatCOP(PRICE_OLD)}</span>
+   737→   737→                <span className="lp-pdp__price-save">Ahorras {formatCOP(SAVED)}</span>
+   738→   738→              </div>
+   739→   739→              <p className="lp-pdp__tax">Incluye envío gratis · <b>Pago contra entrega</b> · Impuestos incluidos</p>
+   740→   740→
+   741→   741→              {/* Color selector */}
+   742→   742→              <div className="lp-variant">
+   743→   743→                <div className="lp-variant__label">
+   744→   744→                  <b>Color</b>
+   745→   745→                  <span>{colorway.label}</span>
+   746→   746→                </div>
+   747→   747→                <div className="lp-pdp__colors">
+   748→   748→                  {COLORWAYS.map((c) => (
+   749→   749→                    <button key={c.id} className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
+   750→   750→                      aria-label={`Color ${c.label}`} onClick={() => selectColorway(c)}>
+   751→   751→                      <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
+   752→   752→                    </button>
+   753→   753→                  ))}
+   754→   754→                </div>
+   755→   755→              </div>
+   756→   756→
+   757→   757→              {/* Talla selector */}
+   758→   758→              <div className="lp-variant">
+   759→   759→                <div className="lp-variant__label">
+   760→   760→                  <b>Talla</b>
+   761→   761→                  <span className="lp-talla-guide">Guía de tallas</span>
+   762→   762→                </div>
+   763→   763→                <div className="lp-tallas">
+   764→   764→                  {TALLAS.map((t) => (
+   765→   765→                    <button key={t} className={`lp-talla ${tall === t ? "is-active" : ""}`}
+   766→   766→                      onClick={() => setTall(t)}>{t}</button>
+   767→   767→                  ))}
+   768→   768→                </div>
+   769→   769→              </div>
+   770→   770→
+   771→   771→              {/* Tier selector — compra familiar (cerebro reptiliano) */}
+   772→   772→              <div className="lp-variant">
+   773→   773→                <div className="lp-variant__label">
+   774→   774→                  <b>Cantidad</b>
+   775→   775→                  <span>Ahorra más llevando más para la familia</span>
+   776→   776→                </div>
+   777→   777→                <div className="lp-tiers">
+   778→   778→                  {TIERS.map((t) => {
+   779→   779→                    const tTotal = t.qty * t.unitPrice;
+   780→   780→                    const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
+   781→   781→                    return (
+   782→   782→                      <button
+   783→   783→                        key={t.id}
+   784→   784→                        type="button"
+   785→   785→                        className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
+   786→   786→                        onClick={() => selectTier(t)}
+   787→   787→                        aria-pressed={tier.id === t.id}
+   788→   788→                      >
+   789→   789→                        {t.badge && (
+   790→   790→                          <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>
+   791→   791→                            {t.badge}
+   792→   792→                          </span>
+   793→   793→                        )}
+   794→   794→                        <span className="lp-tier__radio" />
+   795→   795→                        <span className="lp-tier__main">
+   796→   796→                          <span className="lp-tier__title">{t.label}</span>
+   797→   797→                          <span className="lp-tier__for">{t.for}</span>
+   798→   798→                        </span>
+   799→   799→                        <span className="lp-tier__price">
+   800→   800→                          <span className="lp-tier__each">{formatCOP(t.unitPrice)} c/u</span>
+   801→   801→                          <span className="lp-tier__total">{formatCOP(tTotal)}</span>
+   802→   802→                          {tSave > 0 && <span className="lp-tier__save">Ahorras {formatCOP(tSave)}</span>}
+   803→   803→                        </span>
+   804→   804→                      </button>
+   805→   805→                    );
+   806→   806→                  })}
+   807→   807→                </div>
+   808→   808→              </div>
+   809→   809→
+   810→   810→              {/* Stock bar */}
+   811→   811→              <div className="lp-pdp__stock">
+   812→   812→                <div className="lp-pdp__stock-row">
+   813→   813→                  <span>🔥 En oferta · Stock limitado</span>
+   814→   814→                  <b>Quedan 37</b>
+   815→   815→                </div>
+   816→   816→                <div className="lp-pdp__stock-bar"><div className="lp-pdp__stock-fill" style={{ width: "0%" }} /></div>
+   817→   817→              </div>
+   818→   818→
+   819→   819→              {/* CTA */}
+   820→   820→              <div className="lp-pdp__cta">
+   821→   821→                <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
+   822→   822→                  <Icon name="bag" style={{ width: 18, height: 18 }} /> Pedir {tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {formatCOP(total)}
+   823→   823→                </a>
+   824→   824→                <a href="#formulario" className="lp-btn lp-btn--ghost lp-btn--block" onClick={scrollToForm}>
+   825→   825→                  <Icon name="whatsapp" style={{ width: 18, height: 18 }} /> Comprar por WhatsApp
+   826→   826→                </a>
+   827→   827→              </div>
+   828→   828→
+   829→   829→              {/* Trust mini */}
+   830→   830→              <div className="lp-pdp__trust">
+   831→   831→                <div className="lp-pdp__trust-item">
+   832→   832→                  <Icon name="cash" />
+   833→   833→                  <b>Pago entrega</b>
+   834→   834→                  <small>Pagas al recibir</small>
+   835→   835→                </div>
+   836→   836→                <div className="lp-pdp__trust-item">
+   837→   837→                  <Icon name="truck" />
+   838→   838→                  <b>Envío gratis</b>
+   839→   839→                  <small>A toda Colombia</small>
+   840→   840→                </div>
+   841→   841→                <div className="lp-pdp__trust-item">
+   842→   842→                  <Icon name="shield" />
+   843→   843→                  <b>Garantía 30d</b>
+   844→   844→                  <small>Devolución total</small>
+   845→   845→                </div>
+   846→   846→              </div>
+   847→   847→            </div>
+   848→   848→          </div>
+   849→   849→        </section>
+   850→   850→
+   851→   851→        {/* ============ 3 PASOS ============ */}
+   852→   852→        <section className="lp-section lp-section--paper lp-section--tight">
+   853→   853→          <div className="lp-container">
+   854→   854→            <div className="lp-section-head lp-section-head--center lp-reveal">
+   855→   855→              <span className="lp-eyebrow">Así de fácil</span>
+   856→   856→              <h2>Tener tu Brahma Moster</h2>
+   857→   857→              <p>No necesitas complicarte. Solo elige, confirma y disfruta.</p>
+   858→   858→            </div>
+   859→   859→            <div className="lp-steps">
+   860→   860→              {STEPS.map((s, i) => (
+   861→   861→                <div key={s.num} className="lp-step lp-reveal" data-delay={i + 1}>
+   862→   862→                  <div className="lp-step__num">{s.num}</div>
+   863→   863→                  <h3>{s.title}</h3>
+   864→   864→                  <p>{s.desc}</p>
+   865→   865→                </div>
+   866→   866→              ))}
+   867→   867→            </div>
+   868→   868→          </div>
+   869→   869→        </section>
+   870→   870→
+   871→   871→        {/* ============ BENEFICIOS ============ */}
+   872→   872→        <section className="lp-section" id="beneficios">
+   873→   873→          <div className="lp-container">
+   874→   874→            <div className="lp-section-head lp-section-head--center lp-reveal">
+   875→   875→              <span className="lp-eyebrow">Por qué elegirlo</span>
+   876→   876→              <h2>Diseñado para los que no se detienen</h2>
+   877→   877→              <p>Este calzado casual combina resistencia, confort y un diseño moderno ideal para cualquier ocasión.</p>
+   878→   878→            </div>
+   879→   879→            <div className="lp-benefits">
+   880→   880→              {BENEFITS.map((b, i) => (
+   881→   881→                <article key={b.title} className="lp-benefit lp-reveal" data-delay={(i % 3) + 1}>
+   882→   882→                  <div className="lp-benefit__icon"><Icon name={b.icon} /></div>
+   883→   883→                  <h3>{b.title}</h3>
+   884→   884→                  <p>{b.desc}</p>
+   885→   885→                </article>
+   886→   886→              ))}
+   887→   887→            </div>
+   888→   888→          </div>
+   889→   889→        </section>
+   890→   890→
+   891→   891→        {/* ============ TRAS LAS CÁMARAS — 100% REAL ============ */}
+   892→   892→        <section className="lp-section" id="real">
+   893→   893→          <div className="lp-container">
+   894→   894→            <div className="lp-section-head lp-section-head--center lp-reveal">
+   895→   895→              <span className="lp-eyebrow">Tras las cámaras</span>
+   896→   896→              <h2>100% real. No es estafa.</h2>
+   897→   897→              <p>Mira nuestro inventario, el empaque y los detalles reales del producto. Lo que ves es exactamente lo que llega a tu puerta.</p>
+   898→   898→            </div>
+   899→   899→
+   900→   900→            <div className="lp-bts lp-reveal lp-reveal--scale">
+   901→   901→              {/* Video principal: empacando */}
+   902→   902→              <div className="lp-bts__video lp-bts__video--wide">
+   903→   903→                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/empacando.jpg">
+   904→   904→                  <source src="/videos/empacando.mp4" type="video/mp4" />
+   905→   905→                </video>
+   906→   906→                <span className="lp-bts__caption"><span className="lp-dot" /> Empacando tu pedido</span>
+   907→   907→              </div>
+   908→   908→              {/* Video: zapato café detalle */}
+   909→   909→              <div className="lp-bts__video">
+   910→   910→                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapato-cafe.jpg">
+   911→   911→                  <source src="/videos/zapato-cafe.mp4" type="video/mp4" />
+   912→   912→                </video>
+   913→   913→                <span className="lp-bts__caption">Detalle del producto</span>
+   914→   914→              </div>
+   915→   915→              {/* Foto inventario */}
+   916→   916→              <div className="lp-bts__photo">
+   917→   917→                <img src="/images/inventario.jpg" alt="Inventario real de zapatos BRAHMA organizados por colores" loading="lazy" />
+   918→   918→                <span className="lp-bts__photo-cap">Inventario real</span>
+   919→   919→              </div>
+   920→   920→              {/* Video: zapatos en el piso */}
+   921→   921→              <div className="lp-bts__video">
+   922→   922→                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapatos-piso.jpg">
+   923→   923→                  <source src="/videos/zapatos-piso.mp4" type="video/mp4" />
+   924→   924→                </video>
+   925→   925→                <span className="lp-bts__caption">Stock disponible</span>
+   926→   926→              </div>
+   927→   927→              {/* Video: estantes */}
+   928→   928→              <div className="lp-bts__video">
+   929→   929→                <video autoPlay muted loop playsInline preload="metadata" poster="/images/posters/zapatos-estantes.jpg">
+   930→   930→                  <source src="/videos/zapatos-estantes.mp4" type="video/mp4" />
+   931→   931→                </video>
+   932→   932→                <span className="lp-bts__caption">Almacén físico</span>
+   933→   933→              </div>
+   934→   934→            </div>
+   935→   935→
+   936→   936→            <div className="lp-bts__stats lp-reveal">
+   937→   937→              <div className="lp-bts__stat">
+   938→   938→                <b>+12.000</b>
+   939→   939→                <span>Pedidos despachados</span>
+   940→   940→              </div>
+   941→   941→              <div className="lp-bts__stat">
+   942→   942→                <b>24h</b>
+   943→   943→                <span>Despacho promedio</span>
+   944→   944→              </div>
+   945→   945→              <div className="lp-bts__stat">
+   946→   946→                <b>100%</b>
+   947→   947→                <span>Contra entrega</span>
+   948→   948→              </div>
+   949→   949→            </div>
+   950→   950→          </div>
+   951→   951→        </section>
+   952→   952→
+   953→   953→        {/* ============ TESTIMONIOS WHATSAPP ============ */}
+   954→   954→        <section className="lp-section lp-section--paper" id="opiniones">
+   955→   955→          <div className="lp-container">
+   956→   956→            <div className="lp-section-head lp-section-head--center lp-reveal">
+   957→   957→              <span className="lp-eyebrow">Mensajes reales</span>
+   958→   958→              <h2>Lo que dicen nuestros clientes</h2>
+   959→   959→              <p>Conversaciones reales de WhatsApp de clientes que ya tienen su combo. Sin filtros, sin guion.</p>
+   960→   960→            </div>
+   961→   961→
+   962→   962→            {/* Stats */}
+   963→   963→            <div className="lp-stats lp-reveal" style={{ marginBottom: 48 }}>
+   964→   964→              <div><div className="lp-stat__num"><span data-count="12480" data-suffix="+">0</span></div><div className="lp-stat__label">Clientes felices</div></div>
+   965→   965→              <div><div className="lp-stat__num"><span data-count="4.9" data-suffix="/5">0</span></div><div className="lp-stat__label">Valoración media</div></div>
+   966→   966→              <div><div className="lp-stat__num"><span data-count="98" data-suffix="%">0</span></div><div className="lp-stat__label">Recomendaría</div></div>
+   967→   967→              <div><div className="lp-stat__num"><span data-count="24" data-suffix="h">0</span></div><div className="lp-stat__label">Despacho</div></div>
+   968→   968→            </div>
+   969→   969→
+   970→   970→            <div className="lp-wa-testis">
+   971→   971→              {WA_TESTIMONIALS.map((t, i) => (
+   972→   972→                <article key={t.name} className="lp-wa lp-reveal" data-delay={(i % 3) + 1}>
+   973→   973→                  <div className="lp-wa__shot">
+   974→   974→                    <img src={t.photo} alt={`Mensaje de WhatsApp real de ${t.name} desde ${t.city}`} loading="lazy" />
+   975→   975→                  </div>
+   976→   976→                  <div className="lp-wa__footer">
+   977→   977→                    <div className="lp-wa__stars">{"★".repeat(t.stars)}{"☆".repeat(5 - t.stars)}</div>
+   978→   978→                    <div className="lp-wa__who"><b>{t.name}</b> · {t.city}</div>
+   979→   979→                    <div className="lp-wa__verified"><Icon name="check" /> Compra verificada · {t.photoCaption}</div>
+   980→   980→                  </div>
+   981→   981→                </article>
+   982→   982→              ))}
+   983→   983→            </div>
+   984→   984→          </div>
+   985→   985→        </section>
+   986→   986→
+   987→   987→        {/* ============ OFERTA ============ */}
+   988→   988→        <section className="lp-section lp-section--ink" id="oferta">
+   989→   989→          <div className="lp-container">
+   990→   990→            <div className="lp-offer lp-reveal lp-reveal--scale">
+   991→   991→              <div className="lp-offer__bg" />
+   992→   992→              <div className="lp-offer__inner">
+   993→   993→                <div>
+   994→   994→                  <span className="lp-eyebrow" style={{ color: "var(--lp-amber)" }}>Oferta de lanzamiento</span>
+   995→   995→                  <h2>Llévate tu Combo Brahma Moster hoy</h2>
+   996→   996→                  <p className="lp-offer__sub">Incluye gorra BRAHMA en drill bordada de regalo · Pago contra entrega · Envío a toda Colombia. El precio sube cuando el reloj llegue a cero.</p>
+   997→   997→
+   998→   998→                  <div className="lp-countdown" role="timer" aria-label="Cuenta regresiva">
+   999→   999→                    {[
+  1000→  1000→                      { label: "Horas", key: "h" },
+  1001→  1001→                      { label: "Min", key: "m" },
+  1002→  1002→                      { label: "Seg", key: "s" },
+  1003→  1003→                    ].map((u) => (
+  1004→  1004→                      <div className="lp-countdown__unit" key={u.key}>
+  1005→  1005→                        <span className="lp-countdown__num" data-cd={u.key}>00</span>
+  1006→  1006→                        <span className="lp-countdown__label">{u.label}</span>
+  1007→  1007→                      </div>
+  1008→  1008→                    ))}
+  1009→  1009→                  </div>
+  1010→  1010→
+  1011→  1011→                  <div className="lp-offer__price">
+  1012→  1012→                    <span className="lp-price__old">{formatCOP(PRICE_OLD)}</span>
+  1013→  1013→                    <span className="lp-price__now">{formatCOP(PRICE_NOW)}</span>
+  1014→  1014→                    <span className="lp-price__save">Ahorras {formatCOP(SAVED)}</span>
+  1015→  1015→                  </div>
+  1016→  1016→
+  1017→  1017→                  <a href="#formulario" className="lp-btn lp-btn--light lp-btn--lg lp-btn--block" data-magnetic onClick={scrollToForm}>
+  1018→  1018→                    <Icon name="bolt" style={{ width: 18, height: 18 }} /> QUIERO MI COMBO →
+  1019→  1019→                  </a>
+  1020→  1020→                  <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 16, flexWrap: "wrap", fontSize: "0.8rem", color: "var(--lp-stone-2)" }}>
+  1021→  1021→                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> Pago contraentrega</span>
+  1022→  1022→                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> Envío nacional</span>
+  1023→  1023→                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="check" style={{ width: 14, height: 14, color: "var(--lp-success)" }} /> 🎁 Gorra gratis</span>
+  1024→  1024→                  </div>
+  1025→  1025→                </div>
+  1026→  1026→                <div className="lp-offer__visual">
+  1027→  1027→                  <img src={colorway.img} alt="Combo BRAHMA en oferta" loading="lazy" />
+  1028→  1028→                  <div className="lp-offer__seal">
+  1029→  1029→                    <div>AHORRA<br /><small>{formatCOP(SAVED)}</small>HOY</div>
+  1030→  1030→                  </div>
+  1031→  1031→                </div>
+  1032→  1032→              </div>
+  1033→  1033→            </div>
+  1034→  1034→          </div>
+  1035→  1035→        </section>
+  1036→  1036→
+  1037→  1037→        {/* ============ GARANTÍA ============ */}
+  1038→  1038→        <section className="lp-section">
+  1039→  1039→          <div className="lp-container">
+  1040→  1040→            <div className="lp-guarantee lp-reveal">
+  1041→  1041→              <div className="lp-guarantee__seal"><Icon name="shield" /></div>
+  1042→  1042→              <div>
+  1043→  1043→                <span className="lp-eyebrow">Nuestra promesa</span>
+  1044→  1044→                <h3>Compra 100% segura y verificada</h3>
+  1045→  1045→                <p>Pides, recibes, examinas. Si por cualquier razón el combo no cumple tus expectativas, te devolvemos el 100% de tu dinero. Sin letra pequeña, sin interrogatorios.</p>
+  1046→  1046→                <div className="lp-guarantee__points">
+  1047→  1047→                  <span><Icon name="check" /> Devolución total</span>
+  1048→  1048→                  <span><Icon name="check" /> Sin preguntas</span>
+  1049→  1049→                  <span><Icon name="check" /> Cambio de talla gratis</span>
+  1050→  1050→                  <span><Icon name="check" /> Pago Contra Entrega</span>
+  1051→  1051→                </div>
+  1052→  1052→              </div>
+  1053→  1053→            </div>
+  1054→  1054→          </div>
+  1055→  1055→        </section>
+  1056→  1056→
+  1057→  1057→        {/* ============ FAQ ============ */}
+  1058→  1058→        <section className="lp-section lp-section--paper" id="faq">
+  1059→  1059→          <div className="lp-container">
+  1060→  1060→            <div className="lp-section-head lp-section-head--center lp-reveal">
+  1061→  1061→              <span className="lp-eyebrow">Preguntas frecuentes</span>
+  1062→  1062→              <h2>Todo lo que necesitas saber antes de comprar</h2>
+  1063→  1063→              <p>Y si queda alguna duda, escríbenos por WhatsApp. Respondemos en minutos.</p>
+  1064→  1064→            </div>
+  1065→  1065→            <div className="lp-faq lp-reveal">
+  1066→  1066→              {FAQS.map((f, i) => (
+  1067→  1067→                <div key={i} className={`lp-faq__item ${faqOpen === i ? "is-open" : ""}`}>
+  1068→  1068→                  <button className="lp-faq__q" onClick={() => toggleFaq(i)} aria-expanded={faqOpen === i}>
+  1069→  1069→                    <span>{f.q}</span>
+  1070→  1070→                    <span className="lp-faq__icon" aria-hidden="true" />
+  1071→  1071→                  </button>
+  1072→  1072→                  <div className="lp-faq__a" style={{ maxHeight: faqOpen === i ? 360 : 0 }}>
+  1073→  1073→                    <div className="lp-faq__a-inner">{f.a}</div>
+  1074→  1074→                  </div>
+  1075→  1075→                </div>
+  1076→  1076→              ))}
+  1077→  1077→            </div>
+  1078→  1078→          </div>
+  1079→  1079→        </section>
+  1080→  1080→
+  1081→  1081→        {/* ============ BLOQUE FOMO / JUSTIFICACIÓN TEMU ============ */}
+  1082→  1082→        <section className="lp-section lp-section--tight lp-section--paper">
+  1083→  1083→          <div className="lp-container">
+  1084→  1084→            <div className="lp-fomo lp-reveal">
+  1085→  1085→              <div className="lp-fomo__head">
+  1086→  1086→                <span className="lp-fomo__tag">🔥 Oferta de hoy</span>
+  1087→  1087→                <span className="lp-fomo__countdown-inline">Termina en <b data-cd="h">00</b>:<b data-cd="m">00</b>:<b data-cd="s">00</b></span>
+  1088→  1088→              </div>
+  1089→  1089→              <h2 className="lp-fomo__title">No comprar sería absurdo. Esto es por qué:</h2>
+  1090→  1090→              <div className="lp-fomo__grid">
+  1091→  1091→                <div className="lp-fomo__item">
+  1092→  1092→                  <span className="lp-fomo__num">1</span>
+  1093→  1093→                  <div><b>Pagas cuando lo tienes en la mano</b><p>Cero riesgo. Cero fraude. Si no llega, no pagas.</p></div>
+  1094→  1094→                </div>
+  1095→  1095→                <div className="lp-fomo__item">
+  1096→  1096→                  <span className="lp-fomo__num">2</span>
+  1097→  1097→                  <div><b>Gorra bordada GRATIS incluida</b><p>Que en otras marcas te cobran $45.000 aparte.</p></div>
+  1098→  1098→                </div>
+  1099→  1099→                <div className="lp-fomo__item">
+  1100→  1100→                  <span className="lp-fomo__num">3</span>
+  1101→  1101→                  <div><b>Ahorras $30.000 HOY</b><p>Mañana el precio regresa a $179.900. Sin excepciones.</p></div>
+  1102→  1102→                </div>
+  1103→  1103→                <div className="lp-fomo__item">
+  1104→  1104→                  <span className="lp-fomo__num">4</span>
+  1105→  1105→                  <div><b>Envío 100% gratis a toda Colombia</b><p>Despachamos desde Cúcuta en 24h. Llega en 24-48h.</p></div>
+  1106→  1106→                </div>
+  1107→  1107→              </div>
+  1108→  1108→              <div className="lp-fomo__bottom">
+  1109→  1109→                <div className="lp-fomo__vs">
+  1110→  1110→                  <div className="lp-fomo__vs-col">
+  1111→  1111→                    <span className="lp-fomo__vs-label">En centros comerciales</span>
+  1112→  1112→                    <b className="lp-fomo__vs-price">$280.000+</b>
+  1113→  1113→                    <small>Solo los tenis</small>
+  1114→  1114→                  </div>
+  1115→  1115→                  <div className="lp-fomo__vs-arrow">→</div>
+  1116→  1116→                  <div className="lp-fomo__vs-col lp-fomo__vs-col--win">
+  1117→  1117→                    <span className="lp-fomo__vs-label">Hoy aquí</span>
+  1118→  1118→                    <b className="lp-fomo__vs-price">$149.900</b>
+  1119→  1119→                    <small>Tenis + Gorra + Envío</small>
+  1120→  1120→                  </div>
+  1121→  1121→                </div>
+  1122→  1122→                <a href="#formulario" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic onClick={(e) => { e.preventDefault(); document.getElementById("formulario")?.scrollIntoView({behavior:"smooth"}); }}>
+  1123→  1123→                  <Icon name="bolt" style={{ width: 20, height: 20 }} /> ¡NO DEJAR PASAR ESTA OFERTA!
+  1124→  1124→                </a>
+  1125→  1125→                <p className="lp-fomo__warn">⚠️ Quedan <b>37 unidades</b> a este precio. Cuando se agoten, vuelve a $179.900.</p>
+  1126→  1126→              </div>
+  1127→  1127→            </div>
+  1128→  1128→          </div>
+  1129→  1129→        </section>
+  1130→  1130→
+  1131→  1131→        {/* ============ FORMULARIO ============ */}
+  1132→  1132→        <section className="lp-section" id="formulario">
+  1133→  1133→          <div className="lp-container">
+  1134→  1134→            <div className="lp-form-wrap">
+  1135→  1135→              <div className="lp-form-summary lp-reveal lp-reveal--left">
+  1136→  1136→                <span className="lp-eyebrow">Finaliza tu pedido</span>
+  1137→  1137→                <h2>Pídelo hoy. Págalo al recibir.</h2>
+  1138→  1138→                <p>Deja tus datos y nuestro equipo confirma tu pedido por WhatsApp en minutos. No pagas nada hasta tener el combo en tus manos.</p>
+  1139→  1139→                <ul className="lp-form-summary__list">
+  1140→  1140→                  <li><Icon name="cash" /> Pago Contra Entrega en efectivo</li>
+  1141→  1141→                  <li><Icon name="truck" /> Envío gratis a todo Colombia</li>
+  1142→  1142→                  <li><Icon name="shield" /> Garantía de 30 días incluida</li>
+  1143→  1143→                  <li><Icon name="whatsapp" /> Confirmación por WhatsApp</li>
+  1144→  1144→                </ul>
+  1145→  1145→                <div className="lp-form-summary__price">
+  1146→  1146→                  <div className="lp-row"><span>Combo BRAHMA ({colorway.label}, Talla {tall})</span><span>{formatCOP(tier.unitPrice)}</span></div>
+  1147→  1147→                  <div className="lp-row"><span>Gorra bordada de regalo</span><span>$0</span></div>
+  1148→  1148→                  <div className="lp-row"><span>Envío</span><span>Gratis</span></div>
+  1149→  1149→                  <div className="lp-row"><span>Cantidad</span><span>{tier.qty} {tier.qty > 1 ? "combos" : "combo"} · {tier.for}</span></div>
+  1150→  1150→                  {tierSave > 0 && <div className="lp-row"><span>Ahorro por llevar {tier.qty}</span><span style={{ color: "var(--lp-amber-deep)", fontWeight: 600 }}>-{formatCOP(tierSave)}</span></div>}
+  1151→  1151→                  <div className="lp-row lp-row--total"><span>Total a pagar</span><span>{formatCOP(total)}</span></div>
+  1152→  1152→                </div>
+  1153→  1153→              </div>
+  1154→  1154→
+  1155→  1155→              <form className="lp-form lp-reveal lp-reveal--right" onSubmit={handleSubmit} noValidate>
+  1156→  1156→                <h3 className="lp-form__title">Datos de entrega</h3>
+  1157→  1157→                <p className="lp-form__sub"><Icon name="lock" /> Tus datos están seguros · Cero pago anticipado</p>
+  1158→  1158→
+  1159→  1159→                <div className={`lp-field ${errors.name ? "has-error" : ""}`}>
+  1160→  1160→                  <label htmlFor="f-name">Nombre completo <span className="lp-req">*</span></label>
+  1161→  1161→                  <input id="f-name" className={`lp-input ${errors.name ? "is-error" : ""}`} type="text" placeholder="Ej: Juan Pérez" autoComplete="name"
+  1162→  1162→                    value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+  1163→  1163→                  <span className="lp-field__error">{errors.name}</span>
+  1164→  1164→                </div>
+  1165→  1165→
+  1166→  1166→                <div className={`lp-field ${errors.phone ? "has-error" : ""}`}>
+  1167→  1167→                  <label htmlFor="f-phone">Celular (WhatsApp) <span className="lp-req">*</span></label>
+  1168→  1168→                  <input id="f-phone" className={`lp-input ${errors.phone ? "is-error" : ""}`} type="tel" inputMode="numeric" placeholder="300 123 4567" autoComplete="tel"
+  1169→  1169→                    value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+  1170→  1170→                  <span className="lp-field__error">{errors.phone}</span>
+  1171→  1171→                </div>
+  1172→  1172→
+  1173→  1173→                <div className={`lp-field ${errors.city ? "has-error" : ""}`}>
+  1174→  1174→                  <label htmlFor="f-city">Ciudad <span className="lp-req">*</span></label>
+  1175→  1175→                  <select id="f-city" className={`lp-select ${errors.city ? "is-error" : ""}`} value={form.city}
+  1176→  1176→                    onChange={(e) => setForm({ ...form, city: e.target.value })}>
+  1177→  1177→                    <option value="">Selecciona tu ciudad</option>
+  1178→  1178→                    {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
+  1179→  1179→                  </select>
+  1180→  1180→                  <span className="lp-field__error">{errors.city}</span>
+  1181→  1181→                  <small style={{ display: "block", marginTop: 6, fontSize: "0.72rem", color: "var(--lp-stone)" }}>
+  1182→  1182→                    No enviamos a San Andrés Islas ni Amazonas.
+  1183→  1183→                  </small>
+  1184→  1184→                </div>
+  1185→  1185→
+  1186→  1186→                <div className={`lp-field ${errors.address ? "has-error" : ""}`}>
+  1187→  1187→                  <label htmlFor="f-addr">Dirección de entrega <span className="lp-req">*</span></label>
+  1188→  1188→                  <input id="f-addr" className={`lp-input ${errors.address ? "is-error" : ""}`} type="text" placeholder="Calle 123 #45-67, Apto 301" autoComplete="street-address"
+  1189→  1189→                    value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+  1190→  1190→                  <span className="lp-field__error">{errors.address}</span>
+  1191→  1191→                </div>
+  1192→  1192→
+  1193→  1193→                <div className="lp-field">
+  1194→  1194→                  <label>Color: <b style={{ color: "var(--lp-amber-deep)" }}>{colorway.label}</b></label>
+  1195→  1195→                  <div className="lp-pdp__colors" style={{ gap: 8 }}>
+  1196→  1196→                    {COLORWAYS.map((c) => (
+  1197→  1197→                      <button key={c.id} type="button" className={`lp-color-btn ${colorway.id === c.id ? "is-active" : ""}`}
+  1198→  1198→                        style={{ width: 40, height: 40, padding: 3 }} aria-label={c.label} onClick={() => selectColorway(c)}>
+  1199→  1199→                        <span className="lp-color-btn__swatch" style={{ background: c.hex }} />
+  1200→  1200→                      </button>
+  1201→  1201→                    ))}
+  1202→  1202→                  </div>
+  1203→  1203→                </div>
+  1204→  1204→
+  1205→  1205→                <div className="lp-field">
+  1206→  1206→                  <label>Talla: <b style={{ color: "var(--lp-amber-deep)" }}>{tall}</b></label>
+  1207→  1207→                  <div className="lp-tallas">
+  1208→  1208→                    {TALLAS.map((t) => (
+  1209→  1209→                      <button key={t} type="button" className={`lp-talla ${tall === t ? "is-active" : ""}`}
+  1210→  1210→                        onClick={() => setTall(t)}>{t}</button>
+  1211→  1211→                    ))}
+  1212→  1212→                  </div>
+  1213→  1213→                </div>
+  1214→  1214→
+  1215→  1215→                <div className="lp-field">
+  1216→  1216→                  <label>Cantidad: <b style={{ color: "var(--lp-amber-deep)" }}>{tier.qty} {tier.qty > 1 ? "combos" : "combo"}</b> · {tier.for}</label>
+  1217→  1217→                  <div className="lp-tiers">
+  1218→  1218→                    {TIERS.map((t) => {
+  1219→  1219→                      const tTotal = t.qty * t.unitPrice;
+  1220→  1220→                      const tSave = (PRICE_OLD - t.unitPrice) * t.qty;
+  1221→  1221→                      return (
+  1222→  1222→                        <button key={t.id} type="button" className={`lp-tier ${tier.id === t.id ? "is-active" : ""}`}
+  1223→  1223→                          onClick={() => selectTier(t)} aria-pressed={tier.id === t.id}>
+  1224→  1224→                          {t.badge && <span className={`lp-tier__badge ${t.badgeKind === "best" ? "lp-tier__badge--best" : ""}`}>{t.badge}</span>}
+  1225→  1225→                          <span className="lp-tier__radio" />
+  1226→  1226→                          <span className="lp-tier__main">
+  1227→  1227→                            <span className="lp-tier__title">{t.label}</span>
+  1228→  1228→                            <span className="lp-tier__for">{t.for}</span>
+  1229→  1229→                          </span>
+  1230→  1230→                          <span className="lp-tier__price">
+  1231→  1231→                            <span className="lp-tier__each">{formatCOP(t.unitPrice)} c/u</span>
+  1232→  1232→                            <span className="lp-tier__total">{formatCOP(tTotal)}</span>
+  1233→  1233→                            {tSave > 0 && <span className="lp-tier__save">Ahorras {formatCOP(tSave)}</span>}
+  1234→  1234→                          </span>
+  1235→  1235→                        </button>
+  1236→  1236→                      );
+  1237→  1237→                    })}
+  1238→  1238→                  </div>
+  1239→  1239→                </div>
+  1240→  1240→
+  1241→  1241→                <button type="submit" className="lp-btn lp-btn--temu lp-btn--lg lp-btn--block" data-magnetic disabled={submitting}
+  1242→  1242→                  style={{ marginTop: 8, opacity: submitting ? 0.7 : 1 }}>
+  1243→  1243→                  <Icon name="bolt" style={{ width: 20, height: 20 }} />
+  1244→  1244→                  {submitting ? "Procesando…" : `¡LO QUIERO! · ${formatCOP(total)}`}
+  1245→  1245→                </button>
+  1246→  1246→
+  1247→  1247→                <div className="lp-form__note">
+  1248→  1248→                  <Icon name="cash" />
+  1249→  1249→                  <span>No pagas nada ahora. Pagas en efectivo al recibir tu combo.</span>
+  1250→  1250→                </div>
+  1251→  1251→                <div className="lp-form__secure">
+  1252→  1252→                  <Icon name="lock" /> Datos protegidos · Solo los usamos para tu entrega
+  1253→  1253→                </div>
+  1254→  1254→              </form>
+  1255→  1255→            </div>
+  1256→  1256→          </div>
+  1257→  1257→        </section>
+  1258→  1258→      </main>
+  1259→  1259→
+  1260→  1260→      {/* ============ FOOTER ============ */}
+  1261→  1261→      <footer className="lp-footer">
+  1262→  1262→        <div className="lp-container">
+  1263→  1263→          <div className="lp-footer__top">
+  1264→  1264→            <div className="lp-footer__brand">
+  1265→  1265→              <a href="#top" className="lp-brand lp-brand--footer"><img src="/images/logo-brahma.png" alt="BRAHMA" className="lp-brand__logo" /></a>
+  1266→  1266→              <p>Combo urbano premium para Colombia. Pago Contra Entrega, envío gratis y garantía real.</p>
+  1267→  1267→            </div>
+  1268→  1268→            <div className="lp-footer__col">
+  1269→  1269→              <h4>Producto</h4>
+  1270→  1270→              <a href="#beneficios">Beneficios</a>
+  1271→  1271→              <a href="#opiniones">Opiniones</a>
+  1272→  1272→              <a href="#faq">Preguntas</a>
+  1273→  1273→              <a href="#oferta">Oferta</a>
+  1274→  1274→            </div>
+  1275→  1275→            <div className="lp-footer__col">
+  1276→  1276→              <h4>Compra</h4>
+  1277→  1277→              <a href="#formulario">Hacer pedido</a>
+  1278→  1278→              <a href="#formulario">Pago contra entrega</a>
+  1279→  1279→              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Escríbenos al 300 000 0000", "info"); }}>WhatsApp</a>
+  1280→  1280→            </div>
+  1281→  1281→            <div className="lp-footer__col">
+  1282→  1282→              <h4>Confianza</h4>
+  1283→  1283→              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Garantía de 30 días activa", "info"); }}>Garantía 30 días</a>
+  1284→  1284→              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Envío gratis a todo Colombia", "info"); }}>Envío gratis</a>
+  1285→  1285→              <a href="#" onClick={(e) => { e.preventDefault(); showToast("Términos disponibles bajo solicitud", "info"); }}>Términos</a>
+  1286→  1286→            </div>
+  1287→  1287→          </div>
+  1288→  1288→          <div className="lp-footer__bottom">
+  1289→  1289→            <span>© {new Date().getFullYear()} BRAHMA Moster · Hecho en Colombia.</span>
+  1290→  1290→            <div className="lp-footer__pay">
+  1291→  1291→              <span>CONTRA ENTREGA</span>
+  1292→  1292→              <span>EFECTIVO</span>
+  1293→  1293→              <span>WHATSAPP</span>
+  1294→  1294→            </div>
+  1295→  1295→          </div>
+  1296→  1296→        </div>
+  1297→  1297→      </footer>
+  1298→  1298→
+  1299→  1299→      {/* ============ STICKY CTA MOBILE ============ */}
+  1300→  1300→      <div className="lp-sticky-cta" role="region" aria-label="Comprar">
+  1301→  1301→        <div className="lp-sticky-cta__info">
+  1302→  1302→          <div className="lp-sticky-cta__price">{formatCOP(PRICE_NOW)} <small>{formatCOP(PRICE_OLD)}</small></div>
+  1303→  1303→          <div className="lp-sticky-cta__sub">Pago al recibir · Envío gratis</div>
+  1304→  1304→        </div>
+  1305→  1305→        <a href="#formulario" className="lp-btn lp-btn--primary" data-magnetic onClick={scrollToForm}>
+  1306→  1306→          <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar
+  1307→  1307→        </a>
+  1308→  1308→      </div>
+  1309→  1309→
+  1310→  1310→      {/* ============ DESKTOP BUY BAR ============ */}
+  1311→  1311→      <div className="lp-buy-bar">
+  1312→  1312→        <div className="lp-buy-bar__price">
+  1313→  1313→          {formatCOP(PRICE_NOW)}
+  1314→  1314→          <small>{formatCOP(PRICE_OLD)}</small>
+  1315→  1315→        </div>
+  1316→  1316→        <a href="#formulario" className="lp-btn lp-btn--light" data-magnetic onClick={scrollToForm}>
+  1317→  1317→          <Icon name="bolt" style={{ width: 16, height: 16 }} /> Comprar ahora
+  1318→  1318→        </a>
+  1319→  1319→      </div>
+  1320→  1320→
+  1321→  1321→      {/* ============ TOAST ============ */}
+  1322→  1322→      {toast && (
+  1323→  1323→        <div className={`lp-toast lp-toast--${toast.type} is-visible`} role="status">
+  1324→  1324→          <Icon name={toast.type === "success" ? "check" : toast.type === "error" ? "x" : "sparkle"} />
+  1325→  1325→          <span>{toast.msg}</span>
+  1326→  1326→        </div>
+  1327→  1327→      )}
+  1328→  1328→
+  1329→  1329→      {/* ============ PURCHASE NOTIFICATIONS (prueba social) ============ */}
+  1330→  1330→      {pn && (
+  1331→  1331→        <div className="lp-pn is-visible" role="status" aria-live="polite">
+  1332→  1332→          <span className="lp-pn__avatar" style={{ background: pn.avatarColor }}>{pn.initials}</span>
+  1333→  1333→          <div className="lp-pn__body">
+  1334→  1334→            <div className="lp-pn__title"><b>{pn.name}</b> compró combo {pn.color}</div>
+  1335→  1335→            <div className="lp-pn__meta"><Icon name="location" /> {pn.city} · hace {pn.mins} min</div>
+  1336→  1336→          </div>
+  1337→  1337→        </div>
+  1338→  1338→      )}
+  1339→  1339→    </div>
+  1340→  1340→  );
+  1341→  1341→}
+  1342→  1342→
