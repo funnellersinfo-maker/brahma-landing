@@ -531,7 +531,7 @@ html { scroll-behavior: smooth; }
   padding: 14px 0;
   border-bottom: 1px solid var(--lp-line);
 }
-.lp-mobile-menu .lp-btn { width: 100%; margin-top: 18px; }
+.lp-mobile-menu .lp-btn { width: 100%; margin-top: 18px; justify-content: center; text-align: center; }
 
 /* ---------------------------------------------------------------------
    7. HERO

@@ -806,7 +806,7 @@ export default function Home() {
         <a href="#opiniones">Opiniones</a>
         <a href="#faq">Preguntas</a>
         <a href="#oferta">Oferta</a>
-        <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--block">Comprar ahora</a>
+        <a href="#formulario" className="lp-btn lp-btn--primary lp-btn--block" onClick={scrollToForm}>Comprar ahora</a>
       </div>
 
       <main className="lp-main" id="top">
